@@ -35,7 +35,7 @@ k_0=kbar*0.75; % you may have to change this from the problem set instructions
 % ==============
 
 % a. analytical policies, finite and infinite horizon
-
+% use fsolve
 
 if delta==1 % only makes sense for delta=1
     k_analyt=zeros(1,T);
