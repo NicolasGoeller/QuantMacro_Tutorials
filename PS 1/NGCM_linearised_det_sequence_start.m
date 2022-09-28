@@ -90,7 +90,7 @@ margprod=R-1+delta;
 % order c,k,z
 A=[-sigma, beta *(alpha-1)*alpha*kbar^(alpha-1) ; 0 , 1 ];
 
-B= [-sigma , 0 ; -ckrat,-alpha*kbar^(alpha-1)];
+B= [-sigma , 0 ; -ckrat,(1/beta)];
 
 D = inv(A)*B;
 
