@@ -212,7 +212,7 @@ params.cterm = 0;
 %set guesses
 kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
 cbar = kbar^params.alpha-params.delta*kbar;
-T = 10;
+T = 2;
 
 params.k0 = 0.75*kbar;
 
@@ -220,19 +220,18 @@ params.k0 = 0.75*kbar;
 %kt = [ones(T,1)*0.75*kbar; 0];
 %ct = [ones(T,1)*0.8*cbar; 0];
 kt = ones(T,1)*0.75*kbar;
-ct = ones(T,1)*0.8*cbar;
+ct = ones(T+1,1)*0.8*cbar;
 x = [kt; ct];
 jacob = eye(2*T+1); %Jacobian guess as identity matrix
 %jacob
-%a = ncgm_seq(x, params)
+a = ncgm_seq(x, params);
 %%
 
-a= ncgm_seq(x, params)
+%a= ncgm_seq(x, params)
 %fsolve(@ncgm_seq, x)
 
-%ncgm_broyden(x, jacob, 1e-4, 50, params)
+ncgm_broyden(x, jacob, 1e-4, 5, params)
 
 %%
-
-0.3^(params.sigma*(-1)) - params.beta*(params.alpha*0^(params.alpha - 1) + 1 - params.delta)*0^(params.sigma*(-1))
-
+b = [1, -1, 3]
+max(1e-8, b)
