@@ -21,10 +21,10 @@ delta=1;
 % ============
 
 criter_V = 1e-7; % conv criterion for value function
-T=150; % periods for transition
+T=100; % periods for transition
 
 %mean of capital non-stochastic steady state
-kbar=((1/beta-1+delta)/(alpha*beta))^(1/(alpha-1)); %% here we inserted a *beta
+kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1)); %% here we inserted a *beta
 % initial level of capital in the transition
 k_0=kbar*0.75; % you may have to change this from the problem set instructions
 
@@ -36,16 +36,34 @@ k_0=kbar*0.75; % you may have to change this from the problem set instructions
 % a. analytical policies, finite and infinite horizon
 % use fsolve
 
+
+alphabeta = zeros(1,T); %creating alpahbeta matrix with alphabeta(i)=(alpha*beta)^i
+alphabeta(1)= 1
+for t=2:T
+    alphabeta(t)=alphabeta(t-1)*alpha*beta
+end
+
+
 if delta==1 % only makes sense for delta=1
     k_analyt=zeros(1,T);
+    consum_analyt=zeros(1,T); %vectors with consumption at t
+    consum_analyt_finite=zeros(1,T);
     
     k_analyt(1)=k_0;
     k_analyt_finite(1)=k_0;
     for t=2:T
-        k_analyt(t)= [xxxx fill this in xxxx] ;
-        k_analyt_finite(t)=[xxxx fill this in xxxx];
+        %% use the recursive expression of k calculated in Part1.3
+        k_analyt(t)= (1-1/(sum(alphabeta(1:T-t+2))))*k_analyt(t-1)^alpha ; %sum to T-t+2 because we begin at 1 and not 0
+        k_analyt_finite(t)= (1-(1/sum(alphabeta(1:T-t+2))))*k_analyt_finite(t-1)^alpha;
+        % k_analyt_finite(t)=[xxxx fill this in xxxx];
+        consum_analyt(t-1)=k_analyt(t-1)^alpha - k_analyt(t);
+        consum_analyt_finite(t-1)=k_analyt_finite(t-1)^alpha - k_analyt_finite(t);
     end
+    consum_analyt_finite(T)=k_analyt_finite(T);
+    consum_analyt(T)=k_analyt(T);
 end
+
+
 %% This is nico's generator for system of equations
 
 
