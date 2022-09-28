@@ -6,7 +6,6 @@
 clear
 % close all figures
 close all
-addpath([xxx put your path here in '' xxx])
 
 % ============
 % parameters  - you may have to change this according to instructions
@@ -47,8 +46,12 @@ if delta==1 % only makes sense for delta=1
         k_analyt_finite(t)=[xxxx fill this in xxxx];
     end
 end
+%% This is nico's generator for system of equations
 
+x0 = [0,0];
+x = fsolve(@root2d,x0)
 
+%%
 
 % =====================
 % 4. Log-linearization
@@ -57,36 +60,37 @@ end
 % some ratios as function of parameters
 ybar=kbar^alpha;
 cbar=ybar-delta*kbar;
-% Dont know what these should be used for
-%ckrat=cbar/kbar;
-%R=1/beta;
-%margprod=R-1+delta;
+% need for matrix form of loglin
+ckrat=cbar/kbar;
+R=1/beta;
+margprod=R-1+delta;
 
 % a. write system as A E[y_t+1]+B y_t=0
 
 
 
 % order c,k,z
-A=[[xxxx fill this in xxxx] ];
+A=[-sigma, beta *(alpha-1)*alpha*kbar^(alpha-1) ; 0 , 1 ];
 
-B= [[xxxx fill this in xxxx] ];
+B= [-sigma , 0 ; -ckrat,-alpha*kbar^(alpha-1)];
 
-D = [xxxx fill this in xxxx] ;
+D = A'*B;
 
 % note that these are right-hand eigenvectors
-[ ev lambda]=eig(D);
-aaa=inv(ev);
+[ ev lambda]=eig(D); %%%give the egein vectors and eigen values of D
+aaa=inv(ev); %%% give the invert of the eigen vector matrix
 
 % find eigenvalues equal or larger than one, and check that they equal the
 % number of jump variables - in that case, set BKcond to 1
-
-[xxxx fill this in xxxx] 
+BKcond = abs(diag(lambda))
 
 if BKcond~=1
     disp('BK conditions not satisfied')
 else
-    [xxxx fill this in xxxx] 
-    polfunc= [xxxx fill this in xxxx] % you need to find the policy for consumption here
+    indic =find(abs(diag(lamba))>1);
+    indic1= find(abs(diag(lambda))<=1);
+    polfunc_temp=aaa(indic,:);
+    polfunc= -polfunc_temp(1,2)/polfunc_temp(1);% you need to find the policy for consumption here
 end
 
 % policy functions are in log deviations. so need to pre-multiply by cbar
@@ -180,4 +184,26 @@ else
     h = legend([xxxx fill this in xxxx] ,'Location', 'best','Orientation','Vertical');
 end
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
+%%
+% param values
+params.alpha = 0.4;
+params.beta = 0.99;
+params.sigma = 1;
+params.delta = 1;
+params.kterm = 0;
+
+%set guesses
+kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
+cbar = kbar^params.alpha-params.delta*kbar;
+T = 10;
+
+% Compile inputs
+kt = ones(T,1)*0.75*kbar;
+ct = ones(T,1)*0.8*cbar;
+x = [kt ct];
+jacob = eye(2*T+1);
+
+ncgm_broyden(x,jacob, 1e-4, params)
+
+
 
