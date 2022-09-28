@@ -6,7 +6,6 @@
 clear
 % close all figures
 close all
-addpath([xxx put your path here in '' xxx])
 
 % ============
 % parameters  - you may have to change this according to instructions
@@ -61,10 +60,10 @@ x = fsolve(@root2d,x0)
 % some ratios as function of parameters
 ybar=kbar^alpha;
 cbar=ybar-delta*kbar;
-% Dont know what these should be used for
-%ckrat=cbar/kbar;
-%R=1/beta;
-%margprod=R-1+delta;
+% need for matrix form of loglin
+ckrat=cbar/kbar;
+R=1/beta;
+margprod=R-1+delta;
 
 % a. write system as A E[y_t+1]+B y_t=0
 
