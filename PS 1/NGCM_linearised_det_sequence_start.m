@@ -82,21 +82,21 @@ aaa=inv(ev); %%% give the invert of the eigen vector matrix
 
 % find eigenvalues equal or larger than one, and check that they equal the
 % number of jump variables - in that case, set BKcond to 1
-if abs(lambda(1,1)) >1
-BKcond = 0;
-elseif abs(lambda(2,2)) >1
-BKcond = 0 ;
-else 
-    BKcond =1;
 
+BKcond = 1;
+eigen = [lambda(1,1) lambda(2,2)];
+if all(eigen > 1) || all(eigen < 1)
+    BKcond = 0;
 end
+
+
 if BKcond~=1
     disp('BK conditions not satisfied')
 else
-    indic =find(abs(diag(lambda))>1);
-    indic1= find(abs(diag(lambda))<=1);
-    polfunc_temp=aaa(indic,:);
-    polfunc= -polfunc_temp(1,2)/polfunc_temp(1);% you need to find the policy for consumption here
+    bkev =find(abs(diag(lambda))>1);
+    nbkev= find(abs(diag(lambda))<=1);
+    invP=aaa(bkev,:);
+    polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here
 end
 
 % policy functions are in log deviations. so need to pre-multiply by cbar
@@ -104,7 +104,7 @@ end
 
 clev=cbar+cbar*polfunc(1)*(kgrid-kbar)/kbar;
 kprimelev=kgrid'.^alpha+(1-delta)*kgrid'-clev(:,i);
-
+        
 % calculate the deterministic transition  using the linearised policy
 % functions, and law of motion
 k_lin(1)=k_0;
