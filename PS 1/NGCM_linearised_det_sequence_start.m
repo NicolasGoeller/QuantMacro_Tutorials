@@ -38,9 +38,9 @@ k_0=kbar*0.75; % you may have to change this from the problem set instructions
 
 
 alphabeta = zeros(1,T); %creating alpahbeta matrix with alphabeta(i)=(alpha*beta)^i
-alphabeta(1)= 1
+alphabeta(1)= 1;
 for t=2:T
-    alphabeta(t)=alphabeta(t-1)*alpha*beta
+    alphabeta(t)=alphabeta(t-1)*alpha*beta;
 end
 
 
@@ -66,8 +66,6 @@ end
 
 %% This is nico's generator for system of equations
 
-x0 = [0,0];
-x = fsolve(@root2d,x0)
 
 %%
 
@@ -212,22 +210,35 @@ set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
 % param values
 params.alpha = 0.4;
 params.beta = 0.99;
-params.sigma = 1;
+params.sigma = 1.000001;
 params.delta = 1;
 params.kterm = 0;
+params.cterm = 0;
 
 %set guesses
 kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
 cbar = kbar^params.alpha-params.delta*kbar;
 T = 10;
 
+params.k0 = 0.75*kbar;
+
 % Compile inputs
+%kt = [ones(T,1)*0.75*kbar; 0];
+%ct = [ones(T,1)*0.8*cbar; 0];
 kt = ones(T,1)*0.75*kbar;
 ct = ones(T,1)*0.8*cbar;
-x = [kt ct];
-jacob = eye(2*T+1);
+x = [kt; ct];
+jacob = eye(2*T+1); %Jacobian guess as identity matrix
+%jacob
+%a = ncgm_seq(x, params)
+%%
 
-ncgm_broyden(x,jacob, 1e-4, params)
+a= ncgm_seq(x, params)
+%fsolve(@ncgm_seq, x)
 
+%ncgm_broyden(x, jacob, 1e-4, 50, params)
 
+%%
+
+0.3^(params.sigma*(-1)) - params.beta*(params.alpha*0^(params.alpha - 1) + 1 - params.delta)*0^(params.sigma*(-1))
 
