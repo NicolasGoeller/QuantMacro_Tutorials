@@ -74,7 +74,7 @@ A=[-sigma, beta *(alpha-1)*alpha*kbar^(alpha-1) ; 0 , 1 ];
 
 B= [-sigma , 0 ; -ckrat,-alpha*kbar^(alpha-1)];
 
-D = A'*B;
+D = inv(A)*B;
 
 % note that these are right-hand eigenvectors
 [ ev lambda]=eig(D); %%%give the egein vectors and eigen values of D
@@ -82,12 +82,18 @@ aaa=inv(ev); %%% give the invert of the eigen vector matrix
 
 % find eigenvalues equal or larger than one, and check that they equal the
 % number of jump variables - in that case, set BKcond to 1
-BKcond = abs(diag(lambda))
+if abs(lambda(1,1)) >1
+BKcond = 0;
+elseif abs(lambda(2,2)) >1
+BKcond = 0 ;
+else 
+    BKcond =1;
 
+end
 if BKcond~=1
     disp('BK conditions not satisfied')
 else
-    indic =find(abs(diag(lamba))>1);
+    indic =find(abs(diag(lambda))>1);
     indic1= find(abs(diag(lambda))<=1);
     polfunc_temp=aaa(indic,:);
     polfunc= -polfunc_temp(1,2)/polfunc_temp(1);% you need to find the policy for consumption here
