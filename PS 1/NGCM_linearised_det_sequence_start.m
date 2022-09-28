@@ -48,8 +48,6 @@ if delta==1 % only makes sense for delta=1
 end
 %% This is nico's generator for system of equations
 
-x0 = [0,0];
-x = fsolve(@root2d,x0)
 
 %%
 
@@ -185,25 +183,31 @@ else
 end
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
 %%
+%set guesses
+kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
+cbar = kbar^params.alpha-params.delta*kbar;
+T = 10;
+
 % param values
 params.alpha = 0.4;
 params.beta = 0.99;
 params.sigma = 1;
 params.delta = 1;
 params.kterm = 0;
-
-%set guesses
-kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
-cbar = kbar^params.alpha-params.delta*kbar;
-T = 10;
+params.k0 = 0.75*kbar;
 
 % Compile inputs
 kt = ones(T,1)*0.75*kbar;
-ct = ones(T,1)*0.8*cbar;
-x = [kt ct];
+ct = ones(T+1,1)*0.8*cbar;
+x = [kt; ct];
 jacob = eye(2*T+1);
+%a = ncgm_seq(x, params)
 
 ncgm_broyden(x,jacob, 1e-4, params)
 
 
+%%
+
+c = x1(T+1:end,1)'
+c
 
