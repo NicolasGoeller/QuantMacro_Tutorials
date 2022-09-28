@@ -47,8 +47,12 @@ if delta==1 % only makes sense for delta=1
         k_analyt_finite(t)=[xxxx fill this in xxxx];
     end
 end
+%% This is nico's generator for system of equations
 
+x0 = [0,0];
+x = fsolve(@root2d,x0)
 
+%%
 
 % =====================
 % 4. Log-linearization
@@ -180,4 +184,52 @@ else
     h = legend([xxxx fill this in xxxx] ,'Location', 'best','Orientation','Vertical');
 end
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
+%%
+params.alpha = 0.4;
+params.beta = 0.99;
+params.sigma = 1;
+params.delta = 1;
+params.kterm = 0;
+kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
+cbar = kbar^params.alpha-params.delta*kbar;
+kt = ones(9,1)*0.75*kbar;
+ct = ones(10,1)*0.8*cbar;
+x = [kt;ct];
+%x = [0.75*kbar;0.1;0.1;0.1;0.1; 1;1;1;1;1;1];
+
+fsolve(ncgw_seq(),x)
+
+%% Broydens method
+
+%symbolise all unknowns
+T=10
+syms x [1 2*T+1]
+x
+%create numerical Jacobian
+
+%%
+function F = ncgw_seq()
+T = 9;
+par.alpha = 0.4;
+par.beta = 0.99;
+par.sigma = 1;
+par.delta = 1;
+par.kterm = 0;
+
+%k = x(1:T,1);
+%c = x(T+1:end,1);
+syms x [1 2*T+1];
+
+for t = 1:T
+    %t
+    funcit = [2*(t-1)+1, 2*(t-1)+2];
+    if t == T
+        F(2*T+1) = x(T+t) + par.kterm - x(t)^par.alpha - (1-par.delta)*x(t);
+        break
+    end
+    F(funcit(1)) = x(T+t) + x(t+1) -x(t)^par.alpha - (1-par.delta)*x(t);
+    F(funcit(2)) = x(T+t)^(par.sigma*(-1)) - par.beta*(par.alpha*x(t+1)^(par.alpha - 1) + ...
+        1 - par.delta)*x(T+t+1)^(par.sigma*(-1));
+end
+end
 
