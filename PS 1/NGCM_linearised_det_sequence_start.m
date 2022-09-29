@@ -30,19 +30,16 @@ k_0=kbar*0.75; % you may have to change this from the problem set instructions
 
 
 % ==============
-% 1. analytical case delta=1, finite T and infinite T
+% Problem 2 analytical case delta=1, finite T and infinite T
 % ==============
 
-% a. analytical policies, finite and infinite horizon
-% use fsolve
-
+% a&b. analytical policies, finite and infinite horizon
 
 alphabeta = zeros(1,T); %creating alpahbeta matrix with alphabeta(i)=(alpha*beta)^i
 alphabeta(1)= 1;
 for t=2:T
     alphabeta(t)=alphabeta(t-1)*alpha*beta;
 end
-
 
 if delta==1 % only makes sense for delta=1
     k_analyt=zeros(1,T);
@@ -63,8 +60,60 @@ if delta==1 % only makes sense for delta=1
     consum_analyt(T)=k_analyt(T);
 end
 
+% c. numerical solution algorithms to above problems
 
-%% This is nico's generator for system of equations
+% param values
+params.alpha = 0.4;
+params.beta = 0.99;
+params.sigma = 1.000001;
+params.delta = 1;
+params.kterm = 0;
+params.cterm = 0;
+
+%set guesses
+kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
+cbar = kbar^params.alpha-params.delta*kbar;
+params.k0 = 0.75*kbar;
+
+% Compile inputs
+%kt = [ones(T,1)*0.75*kbar; 0];
+%ct = [ones(T,1)*0.8*cbar; 0];
+
+%% Broydens Method
+
+% Broydens method Finite time T=10
+T1 = 10;
+kt1 = ones(T1,1)*0.75*kbar;
+ct1 = ones(T1,1)*0.8*cbar;
+x1 = [kt1; ct1];
+jacob1 = ncgm_jacob(x1, params);
+trans1 = ncgm_broyden(x1, jacob1, 1e-6, T1, params);
+
+% Broydens method Finite time T=100
+T2 = 100;
+kt2 = ones(T2,1)*0.75*kbar;
+ct2 = ones(T2,1)*0.8*cbar;
+x2 = [kt2; ct2];
+jacob2 = ncgm_jacob(x2, params);
+trans2 = ncgm_broyden(x2, jacob2, 1e-6, T2, params);
+
+% Broydens method Finite time T=200
+T3 = 200;
+kt3 = ones(T3,1)*0.75*kbar;
+ct3 = ones(T3,1)*0.8*cbar;
+x3 = [kt3; ct3];
+jacob3 = ncgm_jacob(x3, params);
+trans3 = ncgm_broyden(x3, jacob3, 1e-6, T3, params);
+
+% Broydens method Infinite time - set T=?
+T4 = 2;
+kt4 = ones(T4,1)*0.75*kbar;
+ct4 = ones(T4,1)*0.8*cbar;
+x4 = [kt4; ct4];
+jacob4 = ncgm_jacob(x4, params);
+trans4 = ncgm_broyden(x4, jacob4, 1e-6, T4, params);
+
+%% Multiple Shooting
 
 
 %%
@@ -210,32 +259,42 @@ params.alpha = 0.4;
 params.beta = 0.99;
 params.sigma = 1.000001;
 params.delta = 1;
-params.kterm = 0;
-params.cterm = 0;
+params.kbar = 0;
+
 
 %set guesses
 kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
 cbar = kbar^params.alpha-params.delta*kbar;
-T = 2;
+T = 15;
 
 params.k0 = 0.75*kbar;
+params.cbar = cbar;
 
 % Compile inputs
 %kt = [ones(T,1)*0.75*kbar; 0];
 %ct = [ones(T,1)*0.8*cbar; 0];
-kt = ones(T,1)*0.75*kbar;
-ct = ones(T+1,1)*0.8*cbar;
+kt = ones(T,1)*kbar*0.75;
+ct = ones(T,1)*cbar*0.8;
 x = [kt; ct];
-jacob = eye(2*T+1); %Jacobian guess as identity matrix
+%jacob1 = eye(2*T); %Jacobian guess as identity matrix
+jacob2 = ncgm_jacob(x, params);
+ncgm_broyden(x, jacob2, 1e-6, 100, params)
+
 %jacob
-a = ncgm_seq(x, params);
+%a = ncgm_seq(x, params);
+rbc_obj_start(x, params);
 %%
+
+%fsolve(@ncgm_seq, x0)
 
 %a= ncgm_seq(x, params)
 %fsolve(@ncgm_seq, x)
+%fsolve(@rbc_obj_start, x)
 
-ncgm_broyden(x, jacob, 1e-4, 5, params)
+
+ncgm_broyden(x, jacob2, 1e-6, 100, params)
 
 %%
-b = [1, -1, 3]
-max(1e-8, b)
+
+
+
