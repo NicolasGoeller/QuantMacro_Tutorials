@@ -174,8 +174,8 @@ end
 %Here is generating a sequence of k from the policy function
 k_lin(1)=k_0;
 for t=2:T
-    c_lin(t-1)=polfunc*((k_lin(t-1)-kbar)/kbar)*cbar + cbar;
-    k_lin(t)=k_lin(t-1)^alpha +(1-delta)*k_lin(t-1) - c_lin(t-1);
+    c_lin(t-1)=polfunc*((k_lin(t-1)-kbar)/kbar)*cbar + cbar; %% compute the linear c from the formula derived in the latex part 3.
+    k_lin(t)=k_lin(t-1)^alpha +(1-delta)*k_lin(t-1) - c_lin(t-1);%% same thing as above
 end
 
 %Here is generating a sequence of k lagged by 1 unit of time 
