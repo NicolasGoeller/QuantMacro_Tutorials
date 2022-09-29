@@ -198,21 +198,27 @@ plot(k_lin,k_lina) %% here is a graph of k'(k)
 %%
 % plot the transition
 % Time variable
-T = 100;
-x = 1:1:T;
 figure(2)
-title('Simulated transition - deterministic')
+subplot(2,1,1)
+T = 100;
+crop_off = 70;
+x = 1:1:crop_off;
+figure(2)
+title('Simulated deterministic transition - infinite time')
 
 hold on
-plot(x, k_analyt, x, trans2(1:T,1)), xlabel('Time steps'), ylabel('Capital level');
-%hold on
-%plot(x, consum_analyt, x, trans1(T+1:end,1)), xlabel('Time steps'), ylabel('Consumption level');
+plot(x, k_analyt(1:crop_off)', x, trans2(1:crop_off)), xlabel('Time steps'), ylabel('Capital level');
+
+subplot(2,1,2);
+hold on
+plot(x, consum_analyt(1:crop_off)', x, trans2(T+1:T+crop_off)), xlabel('Time steps'), ylabel('Consumption level');
+hold off
 
 if delta==1 && abs(sigma-1)<0.001
-    h = legend('Analytical solution', 'Broydens method' ,'Location', 'best','Orientation','Vertical');
+    h = legend('Analytical solution', 'Broydens method' ,'Location', 'bestoutside','Orientation','Vertical');
     h.Title.String = 'Analytically solvable paths';
 else
-    h = legend(['Analytical solution', 'Broydens method'] ,'Location', 'best','Orientation','Vertical');
+    h = legend(['Analytical solution', 'Broydens method'] ,'Location', 'bestoutside','Orientation','Vertical');
     h.Title.String = 'Non-linearised paths';
 end
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
