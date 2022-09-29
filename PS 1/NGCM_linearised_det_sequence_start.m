@@ -235,7 +235,7 @@ xlabel('k_{t}','FontSize',10);
 ylabel('k_{t+1}','FontSize',10);
 subplot (2,1,2);
 title('Percentage of difference');
-plot(k_lin,(k_lina-k_lina_num)/k_lina);
+plot(k_lin,abs((k_lina-k_lina_num)/k_lina));
 xlabel('k_{t}','FontSize',10);
 ylabel('% of difference','FontSize',10);
 %plot(k_lin_num,k_lina_num);
