@@ -106,20 +106,22 @@ jacob3 = ncgm_jacob(x3, params);
 trans3 = ncgm_broyden(x3, jacob3, 1e-6, T3, params);
 
 % Broydens method Infinite time - set T=?
-T4 = 2;
+T4 = 15;
 kt4 = ones(T4,1)*0.75*kbar;
 ct4 = ones(T4,1)*0.8*cbar;
 x4 = [kt4; ct4];
 jacob4 = ncgm_jacob(x4, params);
 trans4 = ncgm_broyden(x4, jacob4, 1e-6, T4, params);
 
+x = 1:1:50; % Time variable
+plot(x, , x, trans4, '.-'), legend('Analytical solution', 'Broydens method', 'Multiple Shooting');
+
 %% Multiple Shooting
 
 
 %%
-
 % =====================
-% 4. Log-linearization
+% 3. Log-linearization
 % =====================
 
 % some ratios as function of parameters
@@ -222,17 +224,9 @@ end
 k_trans_br=x(1:T,1);
 c_trans_br=x(T+1:2*T,1);
 
-% or we just let matlab solve it
-
-[x,fsol]=fsolve([xxxx fill this in xxxx] );
-
-k_trans=x(1:T,1);
-c_trans=x(T+1:2*T,1);
-
-
-
+%%
 % ==============
-% Figures
+% 4. Figures
 % ==============
 % plot policy function
 figure(1)
@@ -242,59 +236,26 @@ title('Policy functions')
 hold on
 [xxxx fill this in xxxx] 
 
+%%
 % plot the transition
+x = 1:1:50;
 figure(2)
 title('Simulated transition - deterministic')
 hold on
-[xxxx fill this in xxxx] 
+% Time variable
+plot(x, k_analyt, x, trans4, x, ), legend('Analytical solution', 'Broydens method', 'Multiple Shooting'),
+xlabel('Time steps'), ylabel('Capital level');
+hold on
+plot(x, consum_analyt, x, trans4, x, ), legend('Analytical solution', 'Broydens method', 'Multiple Shooting'),
+xlabel('Time steps'), ylabel('Consumption level');
+
 if delta==1 && abs(sigma-1)<0.001
     h = legend([xxxx fill this in xxxx] ,'Location', 'best','Orientation','Vertical');
 else
     h = legend([xxxx fill this in xxxx] ,'Location', 'best','Orientation','Vertical');
 end
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
-%%
-% param values
-params.alpha = 0.4;
-params.beta = 0.99;
-params.sigma = 1.000001;
-params.delta = 1;
-params.kbar = 0;
 
-
-%set guesses
-kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
-cbar = kbar^params.alpha-params.delta*kbar;
-T = 15;
-
-params.k0 = 0.75*kbar;
-params.cbar = cbar;
-
-% Compile inputs
-%kt = [ones(T,1)*0.75*kbar; 0];
-%ct = [ones(T,1)*0.8*cbar; 0];
-kt = ones(T,1)*kbar*0.75;
-ct = ones(T,1)*cbar*0.8;
-x = [kt; ct];
-%jacob1 = eye(2*T); %Jacobian guess as identity matrix
-jacob2 = ncgm_jacob(x, params);
-ncgm_broyden(x, jacob2, 1e-6, 100, params)
-
-%jacob
-%a = ncgm_seq(x, params);
-rbc_obj_start(x, params);
-%%
-
-%fsolve(@ncgm_seq, x0)
-
-%a= ncgm_seq(x, params)
-%fsolve(@ncgm_seq, x)
-%fsolve(@rbc_obj_start, x)
-
-
-ncgm_broyden(x, jacob2, 1e-6, 100, params)
-
-%%
 
 
 
