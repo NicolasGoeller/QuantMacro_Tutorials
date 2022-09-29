@@ -12,7 +12,6 @@ close all
 % ============
 alpha=0.4; % capital share was named theat before
 beta = 0.99; % disfcount factor
-%rho = 0.95;   % persistence of TFP shock this doesnt eist in the PS
 sigma = 1.0001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=1;
 
@@ -24,8 +23,9 @@ criter_V = 1e-7; % conv criterion for value function
 T=10; % periods for transition
 
 %mean of capital non-stochastic steady state
-kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1)); %% here we inserted a *beta
+kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1)); 
 cbar= kbar^alpha-delta*kbar
+
 % initial level of capital in the transition
 k_0=kbar*0.75; % you may have to change this from the problem set instructions
 
@@ -36,6 +36,7 @@ k_0=kbar*0.75; % you may have to change this from the problem set instructions
 
 % a&b. analytical policies, finite and infinite horizon
 
+%% Analytical part and sequence
 alphabeta = zeros(1,T); %creating alpahbeta matrix with alphabeta(i)=(alpha*beta)^i
 alphabeta(1)= 1;
 for t=2:T
@@ -61,6 +62,8 @@ if delta==1 % only makes sense for delta=1
     consum_analyt(T)=k_analyt(T);
 end
 
+%%
+
 % c. numerical solution algorithms to above problems
 
 % param values
@@ -69,12 +72,13 @@ params.beta = 0.99;
 params.sigma = 1.000001;
 params.delta = 1;
 params.kterm = 0;
-params.cterm = 0;
+
 
 %set guesses
 kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
 cbar = kbar^params.alpha-params.delta*kbar;
 params.k0 = 0.75*kbar;
+params.cbar = cbar;
 
 % Compile inputs
 %kt = [ones(T,1)*0.75*kbar; 0];
@@ -115,10 +119,20 @@ jacob4 = ncgm_jacob(x4, params);
 trans4 = ncgm_broyden(x4, jacob4, 1e-6, T4, params);
 
 x = 1:1:50; % Time variable
-plot(x, , x, trans4, '.-'), legend('Analytical solution', 'Broydens method', 'Multiple Shooting');
+%plot(x, , x, trans4, '.-'), legend('Analytical solution', 'Broydens method', 'Multiple Shooting');
 
 %% Multiple Shooting
+T=20;
+criter_V=1e-8;
+c0_shots_T10 =ncgm_multiple_shooting(alpha, beta, delta, sigma, T, criter_V);
 
+% T=100;
+% criter_V=1e-8;
+% c0_shots_T100=ncgm_multiple_shooting(alpha, beta, delta, sigma, T, criter_V);
+% 
+% T=200;
+% criter_V=1e-8;
+% c0_shots_T200=ncgm_multiple_shooting(alpha, beta, delta, sigma, T, criter_V);
 
 %%
 % =====================
@@ -180,71 +194,6 @@ for t=2:T
 end
 
 
-% ==============
-% 4. Solve deterministic sequence
-% ==============
-
-% as usual we need an initial guess for the sequences of k and c - here we
-% just use steady state
-x0=[kbar*ones(T,1);cbar*ones(T,1)];
-%%
-% zpath=ones(T,1);
-% zpath(1)=1.01;
-% for i=2:T-1
-%     zpath(i)=exp(log(zpath(i-1)));
-% end
-
-% now we need a function that returns errors of the equation system,
-% constraining k(0)=k_0, and c(T)=cbar
-
-% here we use Broyden's method
-
-%Initial guess for jacobian - use finite difference at steady state
-%sequences of k and c
-%rbc_obj(x,alpha,beta,sigma,delta,kbar,cbar)
-%%
-clear dx J
-for i=1:2*T
-    dx = zeros(2*T,1);
-    dx(i)=x0(i)*0.001;
-    diffF = rbc_obj_start(x0+dx,alpha,beta,sigma,delta,kbar,cbar)-rbc_obj_start(x0,alpha,beta,sigma,delta,kbar,cbar);
-    diffX= dx(i);
-    J(:,i)=[diffF/diffX] ;
-end
-clear x
-%%
-crit=1e-4;
-x=x0;
-f0=rbc_obj_start(x,alpha,beta,sigma,delta,k_0,cbar);
-f=rbc_obj_start(x,alpha,beta,sigma,delta,k_0,cbar);
-%%
-while max(abs(f))>crit
-
-%dx = [xxxx fill this in xxxx] 
-%     dx = zeros(2*T,1);
-%     for i=1:2*T
-%         for j=1:2*T
-%             dx(i)= dx(i)-J(i,j)^(-1)*f(i);
-%         end
-%     end
-    f0 = rbc_obj_start(x,alpha,beta,sigma,delta,k_0,cbar);
-    dx = -J\f; 
-    %dx = dx*(x'*x)/(10*(dx'*dx));
-    %while x+dx<1e-6
-      %  dx=dx/2;
-    %end
-    xn1=max(ones(2*T,1)*1e-8,x+dx);
-    dx=xn1-x;
-    f = rbc_obj_start(xn1,alpha,beta,sigma,delta,k_0,cbar);
-    %J = [] ;
-    J = J + ((f-f0)-J*dx)*dx'/(dx'*dx);
-    %B = B + ((y' - B*s)*s')/(s'*s);
-    x=xn1;
-
-
-end
-
-
 %%
 % ==============
 % 4. Figures
@@ -264,10 +213,10 @@ figure(2)
 title('Simulated transition - deterministic')
 hold on
 % Time variable
-plot(x, k_analyt, x, trans4, x, ), legend('Analytical solution', 'Broydens method', 'Multiple Shooting'),
+%plot(x, k_analyt, x, trans4, x, ), legend('Analytical solution', 'Broydens method', 'Multiple Shooting'),
 xlabel('Time steps'), ylabel('Capital level');
 hold on
-plot(x, consum_analyt, x, trans4, x, ), legend('Analytical solution', 'Broydens method', 'Multiple Shooting'),
+%plot(x, consum_analyt, x, trans4, x, ), legend('Analytical solution', 'Broydens method', 'Multiple Shooting'),
 xlabel('Time steps'), ylabel('Consumption level');
 
 if delta==1 && abs(sigma-1)<0.001
