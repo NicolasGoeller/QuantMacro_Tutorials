@@ -11,7 +11,7 @@ close all
 % parameters  - you may have to change this according to instructions
 % ============
 alpha=0.4; % capital share was named theat before
-beta = 0.99; % discount factor
+beta = 0.99; % disfcount factor
 %rho = 0.95;   % persistence of TFP shock this doesnt eist in the PS
 sigma = 1.00001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=1;
@@ -78,8 +78,6 @@ ybar=kbar^alpha;
 cbar=ybar-delta*kbar;
 % need for matrix form of loglin
 ckrat=cbar/kbar;
-R=1/beta;
-margprod=R-1+delta;
 
 % a. write system as A E[y_t+1]+B y_t=0
 
@@ -105,22 +103,22 @@ if all(eigen > 1) || all(eigen < 1)
     BKcond = 0;
 end
 
-
+%If the Blanchard Kahn condition is satisfied, we can find the expression
+%of "alpha1"
 if BKcond~=1
     disp('BK conditions not satisfied')
 else
     bkev =find(abs(diag(lambda))>1);
-    nbkev= find(abs(diag(lambda))<=1);
-    invP=aaa(bkev,:);
+    invP=aaa(bkev,:);%%Select the element of the invert of the vector matrix needed to compute the policy function
     polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here
 end
 
 % policy functions are in log deviations. so need to pre-multiply by cbar
 % and add cbar to get levels
-
+%%
 clev=cbar+cbar*polfunc(1)*(kgrid-kbar)/kbar;
 kprimelev=kgrid'.^alpha+(1-delta)*kgrid'-clev(:,i);
-        
+  
 % calculate the deterministic transition  using the linearised policy
 % functions, and law of motion
 k_lin(1)=k_0;
