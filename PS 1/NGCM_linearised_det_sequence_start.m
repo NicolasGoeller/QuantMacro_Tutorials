@@ -23,8 +23,9 @@ criter_V = 1e-7; % conv criterion for value function
 T=100; % periods for transition
 
 %mean of capital non-stochastic steady state
-kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1)); %% here we inserted a *beta
-cbar= kbar^alpha-delta*kbar;
+kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1)); 
+cbar= kbar^alpha-delta*kbar
+
 % initial level of capital in the transition
 k_0=kbar*0.75; % you may have to change this from the problem set instructions
 
@@ -35,6 +36,7 @@ k_0=kbar*0.75; % you may have to change this from the problem set instructions
 
 % a&b. analytical policies, finite and infinite horizon; delta = 1
 
+%% Analytical part and sequence
 alphabeta = zeros(1,T); %creating alpahbeta matrix with alphabeta(i)=(alpha*beta)^i
 alphabeta(1)= 1;
 for t=2:T
@@ -59,7 +61,9 @@ if delta==1 % only makes sense for delta=1
     consum_analyt_finite(T)=k_analyt_finite(T);
     consum_analyt(T)=k_analyt(T);
 end
+
 %%
+
 % c. numerical solution algorithms to above problems
 
 % param values
@@ -116,7 +120,17 @@ jacob4 = ncgm_jacob(x4, params);
 trans4 = ncgm_broyden(x4, jacob4, 1e-6, T4, params);
 
 %% Multiple Shooting
+T=20;
+criter_V=1e-8;
+c0_shots_T10 =ncgm_multiple_shooting(alpha, beta, delta, sigma, T, criter_V);
 
+% T=100;
+% criter_V=1e-8;
+% c0_shots_T100=ncgm_multiple_shooting(alpha, beta, delta, sigma, T, criter_V);
+% 
+% T=200;
+% criter_V=1e-8;
+% c0_shots_T200=ncgm_multiple_shooting(alpha, beta, delta, sigma, T, criter_V);
 
 %%
 % =====================
@@ -194,6 +208,9 @@ subplot(2,1,1)
 title('Policy functions')
 hold on
 plot(k_lin,k_lina) %% here is a graph of k'(k)
+xlabel('k_{t}','FontSize',10);
+ylabel('k_{t+1}','FontSize',10);
+hold off
 
 %%
 % plot the transition
