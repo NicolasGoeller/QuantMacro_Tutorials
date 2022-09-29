@@ -183,7 +183,19 @@ end
 
 % calculate the deterministic transition  using the linearised policy
 % functions, and law of motion
-%Here is generating a sequence of k from the policy function
+%%
+% Broydens method Infinite time - set T=?
+T4 = 51;
+T=50;
+kt4 = ones(T4,1)*0.75*kbar;
+ct4 = ones(T4,1)*0.8*cbar;
+x4 = [kt4; ct4];
+jacob4 = ncgm_jacob(x4, params);
+k_lina_num2 = ncgm_broyden(x4, jacob4, 1e-6, T4, params);
+k_lina_num = k_lina_num2(1:T4);
+
+
+k_lina_num=ncgm_broyden(x4, jacob4, 1e-6, 50, params); %values goes from k1 to kT (k(t) vector)
 k_lin(1)=k_0;
 for t=2:T
     c_lin(t-1)=polfunc*((k_lin(t-1)-kbar)/kbar)*cbar + cbar;
@@ -192,6 +204,11 @@ end
 
 %Here is generating a sequence of k lagged by 1 unit of time 
 k_lina(1)=k_lin(1,2);
+
+k_lin_num = k_lina_num; 
+k_lin_num(end)=[];% values goes from k0 to kT-1 (k(t-1))
+k_lina_num(1)=[];
+
 for t=2:(T)
     c_lina(t-1)=polfunc*((k_lina(t-1)-kbar)/kbar)*cbar + cbar;
     k_lina(t)=k_lina(t-1)^alpha +(1-delta)*k_lina(t-1) - c_lina(t-1);
@@ -202,14 +219,22 @@ end
 % 4. Figures
 % ==============
 % plot policy function
+% plot policy function
 figure(1)
 % levels
-subplot(2,1,1)
-title('Policy functions')
-hold on
-plot(k_lin,k_lina) %% here is a graph of k'(k)
+subplot(2,1,1); subplot
+title('Policy functions');
+hold on;
+plot(k_lin,k_lina); %% here is a graph of k'(k)
+plot(k_lin_num',k_lina_num');
 xlabel('k_{t}','FontSize',10);
 ylabel('k_{t+1}','FontSize',10);
+subplot (2,1,2);
+title('Percentage of difference');
+plot(k_lin,abs((k_lina-k_lina_num)/k_lina));
+xlabel('k_{t}','FontSize',10);
+ylabel('% of difference','FontSize',10);
+%plot(k_lin_num,k_lina_num);
 hold off
 
 %%
