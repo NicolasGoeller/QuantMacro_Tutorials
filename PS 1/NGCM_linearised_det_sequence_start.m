@@ -186,6 +186,45 @@ for t=2:(T)
 end
 
 
+%graphpart 4 q1
+T= [10,100,200];
+k_analyt_finite = zeros(3,T(3));
+c_analyt_finite =zeros (3,T(3));
+for i=1:length(T)
+    k_analyt_finite(i,1)=k_0;
+    for t=2:T(i)+1
+        k_analyt_finite(i,t) = alpha*beta*((1-(alpha*beta)^(T(i)+1-t))/(1-(alpha*beta)^(T(i)+1-t+1)))*k_analyt_finite(i,t-1)^alpha;
+        c_analyt_finite(i,1) = k_0^alpha +(1-delta)*k_analyt_finite(i,1) - k_analyt_finite(i,2);
+        c_analyt_finite(i,t) = ((1-alpha*beta)/(1-(alpha*beta)^(T(i)-t+1)))*k_analyt_finite(i,t)^alpha;
+    end
+end
+
+
+
+T=15;
+k_analyt = zeros(1,T);
+c_analyt = zeros(1,T);
+k_analyt(1) = k_0;
+
+
+
+for t=2:T+1
+    k_analyt(t) = alpha*beta*k_analyt(t-1)^alpha;
+    c_analyt(t) = (1-alpha*beta)*k_analyt(t)^alpha;
+end
+
+
+hold on 
+plot(1:16, k_analyt);
+plot(1:16, c_analyt);
+xlabel('Time','FontSize',10);
+ylabel('Value','FontSize',10);
+legend('Capital','Consumption');
+hold off
+
+
+
+
 % ==============
 % 4. Solve deterministic sequence
 % ==============
@@ -262,6 +301,9 @@ subplot(2,1,1)
 title('Policy functions')
 hold on
 plot(k_lin,k_lina) %% here is a graph of k'(k)
+xlabel('k_{t}','FontSize',10);
+ylabel('k_{t+1}','FontSize',10);
+hold off
 
 %%
 % plot the transition
