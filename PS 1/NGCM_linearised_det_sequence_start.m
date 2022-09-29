@@ -110,21 +110,19 @@ if BKcond~=1
 else
     bkev =find(abs(diag(lambda))>1);
     invP=aaa(bkev,:);%%Select the element of the invert of the vector matrix needed to compute the policy function
-    polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here
+    polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here : derived analytically 
 end
 
 % policy functions are in log deviations. so need to pre-multiply by cbar
 % and add cbar to get levels
 %%
-clev=cbar+cbar*polfunc(1)*(kgrid-kbar)/kbar;
-kprimelev=kgrid'.^alpha+(1-delta)*kgrid'-clev(:,i);
-  
+
 % calculate the deterministic transition  using the linearised policy
 % functions, and law of motion
 k_lin(1)=k_0;
 for t=2:T
-    c_lin(t-1)=[xxxx fill this in xxxx] 
-    k_lin(t)=[xxxx fill this in xxxx] 
+    c_lin(t-1)=polfunc*((k_lin(t-1)-kbar)/kbar)*cbar + cbar;
+    k_lin(t)=k_lin(t-1)^alpha +(1-delta)*k_lin(t-1) - c_lin(t-1)
 end
 
 
@@ -191,7 +189,8 @@ figure(1)
 subplot(2,1,1)
 title('Policy functions')
 hold on
-[xxxx fill this in xxxx] 
+time = linspace (1,10,100);
+plot(time,k_lin)
 
 % plot the transition
 figure(2)
