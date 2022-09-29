@@ -11,7 +11,7 @@ close all
 % parameters  - you may have to change this according to instructions
 % ============
 alpha=0.4; % capital share was named theat before
-beta = 0.99; % discount factor
+beta = 0.99; % disfcount factor
 %rho = 0.95;   % persistence of TFP shock this doesnt eist in the PS
 sigma = 1.0001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=1;
@@ -30,20 +30,17 @@ cbar= kbar^alpha-delta*kbar
 k_0=kbar*0.75; % you may have to change this from the problem set instructions
 
 
-%% ==============
-% 1. analytical case delta=1, finite T and infinite T
+% ==============
+% Problem 2 analytical case delta=1, finite T and infinite T
 % ==============
 
-% a. analytical policies, finite and infinite horizon
-% use fsolve
-%% Result of the analytical part
+% a&b. analytical policies, finite and infinite horizon
 
 alphabeta = zeros(1,T); %creating alpahbeta matrix with alphabeta(i)=(alpha*beta)^i
 alphabeta(1)= 1;
 for t=2:T
     alphabeta(t)=alphabeta(t-1)*alpha*beta;
 end
-
 
 if delta==1 % only makes sense for delta=1
     k_analyt=zeros(1,T);
@@ -64,7 +61,126 @@ if delta==1 % only makes sense for delta=1
     consum_analyt(T)=k_analyt(T);
 end
 
-%% ==============
+% c. numerical solution algorithms to above problems
+
+% param values
+params.alpha = 0.4;
+params.beta = 0.99;
+params.sigma = 1.000001;
+params.delta = 1;
+params.kterm = 0;
+params.cterm = 0;
+
+%set guesses
+kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
+cbar = kbar^params.alpha-params.delta*kbar;
+params.k0 = 0.75*kbar;
+
+% Compile inputs
+%kt = [ones(T,1)*0.75*kbar; 0];
+%ct = [ones(T,1)*0.8*cbar; 0];
+
+%% Broydens Method
+
+% Broydens method Finite time T=10
+T1 = 10;
+kt1 = ones(T1,1)*0.75*kbar;
+ct1 = ones(T1,1)*0.8*cbar;
+x1 = [kt1; ct1];
+jacob1 = ncgm_jacob(x1, params);
+trans1 = ncgm_broyden(x1, jacob1, 1e-6, T1, params);
+
+% Broydens method Finite time T=100
+T2 = 100;
+kt2 = ones(T2,1)*0.75*kbar;
+ct2 = ones(T2,1)*0.8*cbar;
+x2 = [kt2; ct2];
+jacob2 = ncgm_jacob(x2, params);
+trans2 = ncgm_broyden(x2, jacob2, 1e-6, T2, params);
+
+% Broydens method Finite time T=200
+T3 = 200;
+kt3 = ones(T3,1)*0.75*kbar;
+ct3 = ones(T3,1)*0.8*cbar;
+x3 = [kt3; ct3];
+jacob3 = ncgm_jacob(x3, params);
+trans3 = ncgm_broyden(x3, jacob3, 1e-6, T3, params);
+
+% Broydens method Infinite time - set T=?
+T4 = 15;
+kt4 = ones(T4,1)*0.75*kbar;
+ct4 = ones(T4,1)*0.8*cbar;
+x4 = [kt4; ct4];
+jacob4 = ncgm_jacob(x4, params);
+trans4 = ncgm_broyden(x4, jacob4, 1e-6, T4, params);
+
+x = 1:1:50; % Time variable
+plot(x, , x, trans4, '.-'), legend('Analytical solution', 'Broydens method', 'Multiple Shooting');
+
+%% Multiple Shooting
+
+
+%%
+% =====================
+% 3. Log-linearization
+% =====================
+
+% some ratios as function of parameters
+ybar=kbar^alpha;
+cbar=ybar-delta*kbar;
+% need for matrix form of loglin
+ckrat=cbar/kbar;
+
+% a. write system as A E[y_t+1]+B y_t=0
+
+
+
+% order c,k,z
+A=[-sigma, beta *(alpha-1)*alpha*kbar^(alpha-1) ; 0 , 1 ];
+
+B= [-sigma , 0 ; -ckrat,(1/beta)];
+
+D = inv(A)*B;
+
+% note that these are right-hand eigenvectors
+[ ev lambda]=eig(D); %%%give the egein vectors and eigen values of D
+aaa=inv(ev); %%% give the invert of the eigen vector matrix
+
+% find eigenvalues equal or larger than one, and check that they equal the
+% number of jump variables - in that case, set BKcond to 1
+
+BKcond = 1;
+eigen = [lambda(1,1) lambda(2,2)];
+if all(eigen > 1) || all(eigen < 1)
+    BKcond = 0;
+end
+
+%If the Blanchard Kahn condition is satisfied, we can find the expression
+%of "alpha1"
+if BKcond~=1
+    disp('BK conditions not satisfied')
+else
+    bkev =find(abs(diag(lambda))>1);
+    invP=aaa(bkev,:);%%Select the element of the invert of the vector matrix needed to compute the policy function
+    polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here
+end
+
+% policy functions are in log deviations. so need to pre-multiply by cbar
+% and add cbar to get levels
+%%
+clev=cbar+cbar*polfunc(1)*(kgrid-kbar)/kbar;
+kprimelev=kgrid'.^alpha+(1-delta)*kgrid'-clev(:,i);
+  
+% calculate the deterministic transition  using the linearised policy
+% functions, and law of motion
+k_lin(1)=k_0;
+for t=2:T
+    c_lin(t-1)=[xxxx fill this in xxxx] 
+    k_lin(t)=[xxxx fill this in xxxx] 
+end
+
+
+% ==============
 % 4. Solve deterministic sequence
 % ==============
 
@@ -130,20 +246,8 @@ end
 
 
 %%
-%k_trans_br=x(1:T,1);
-%c_trans_br=x(T+1:2*T,1);
-
-% or we just let matlab solve it
-
-[x,fsol]=fsolve([xxxx fill this in xxxx] );
-
-k_trans=x(1:T,1);
-c_trans=x(T+1:2*T,1);
-
-
-
 % ==============
-% Figures
+% 4. Figures
 % ==============
 % plot policy function
 figure(1)
@@ -153,50 +257,26 @@ title('Policy functions')
 hold on
 [xxxx fill this in xxxx] 
 
+%%
 % plot the transition
+x = 1:1:50;
 figure(2)
 title('Simulated transition - deterministic')
 hold on
-[xxxx fill this in xxxx] 
+% Time variable
+plot(x, k_analyt, x, trans4, x, ), legend('Analytical solution', 'Broydens method', 'Multiple Shooting'),
+xlabel('Time steps'), ylabel('Capital level');
+hold on
+plot(x, consum_analyt, x, trans4, x, ), legend('Analytical solution', 'Broydens method', 'Multiple Shooting'),
+xlabel('Time steps'), ylabel('Consumption level');
+
 if delta==1 && abs(sigma-1)<0.001
     h = legend([xxxx fill this in xxxx] ,'Location', 'best','Orientation','Vertical');
 else
     h = legend([xxxx fill this in xxxx] ,'Location', 'best','Orientation','Vertical');
 end
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
-%%
-% param values
-params.alpha = 0.4;
-params.beta = 0.99;
-params.sigma = 1.000001;
-params.delta = 1;
-params.kterm = 0;
-params.cterm = 0;
 
-%set guesses
-kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
-cbar = kbar^params.alpha-params.delta*kbar;
-T = 10;
 
-params.k0 = 0.75*kbar;
 
-% Compile inputs
-kt = [ones(T,1)*0.75*kbar; 0];
-ct = [ones(T,1)*0.8*cbar; 0];
-%kt = ones(T,1)*0.75*kbar;
-%ct = ones(T,1)*0.8*cbar;
-x = [kt; ct];
-jacob = eye(2*T); %Jacobian guess as identity matrix
-%jacob
-%a = ncgm_seq(x, params)
-%%
-
-a= ncgm_seq(x, params)
-%fsolve(@ncgm_seq, x)
-%%
-ncgm_broyden(x, jacob, 1e-4, 50, params)
-
-%%
-
-0.3^(params.sigma*(-1)) - params.beta*(params.alpha*0^(params.alpha - 1) + 1 - params.delta)*0^(params.sigma*(-1))
 
