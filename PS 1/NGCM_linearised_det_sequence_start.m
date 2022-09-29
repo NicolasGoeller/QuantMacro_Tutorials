@@ -37,6 +37,7 @@ k_0=kbar*0.75; % you may have to change this from the problem set instructions
 % a&b. analytical policies, finite and infinite horizon
 
 %% Analytical part and sequence
+T=15;
 alphabeta = zeros(1,T); %creating alpahbeta matrix with alphabeta(i)=(alpha*beta)^i
 alphabeta(1)= 1;
 for t=2:T
@@ -58,8 +59,8 @@ if delta==1 % only makes sense for delta=1
         consum_analyt(t-1)=k_analyt(t-1)^alpha - k_analyt(t);
         consum_analyt_finite(t-1)=k_analyt_finite(t-1)^alpha - k_analyt_finite(t);
     end
-    consum_analyt_finite(T)=k_analyt_finite(T);
-    consum_analyt(T)=k_analyt(T);
+    consum_analyt_finite(T)=k_analyt_finite(T)^alpha;
+    consum_analyt(T)=k_analyt(T)^alpha;
 end
 
 %%
@@ -181,11 +182,22 @@ end
 
 % policy functions are in log deviations. so need to pre-multiply by cbar
 % and add cbar to get levels
-%%
 
-% calculate the deterministic transition  using the linearised policy
-% functions, and law of motion
-%Here is generating a sequence of k from the policy function
+%%
+% Broydens method Infinite time - set T=?
+T4 = 51;
+T=50;
+kt4 = ones(T4,1)*0.75*kbar;
+ct4 = ones(T4,1)*0.8*cbar;
+x4 = [kt4; ct4];
+jacob4 = ncgm_jacob(x4, params);
+k_lina_num2 = ncgm_broyden(x4, jacob4, 1e-6, T4, params);
+k_lina_num = k_lina_num2(1:T4);
+
+
+
+
+%k_lina_num=ncgm_broyden(x4, jacob4, 1e-6, 50, params); %values goes from k1 to kT (k(t) vector)
 k_lin(1)=k_0;
 for t=2:T
     c_lin(t-1)=polfunc*((k_lin(t-1)-kbar)/kbar)*cbar + cbar;
@@ -194,58 +206,19 @@ end
 
 %Here is generating a sequence of k lagged by 1 unit of time 
 k_lina(1)=k_lin(1,2);
+
+k_lin_num = k_lina_num; 
+k_lin_num(end)=[];% values goes from k0 to kT-1 (k(t-1))
+k_lina_num(1)=[];
+
 for t=2:(T)
     c_lina(t-1)=polfunc*((k_lina(t-1)-kbar)/kbar)*cbar + cbar;
     k_lina(t)=k_lina(t-1)^alpha +(1-delta)*k_lina(t-1) - c_lina(t-1);
 end
 
 
-%graphpart 4 q1
-T= [10,100,200];
-k_analyt_finite = zeros(3,T(3));
-c_analyt_finite =zeros (3,T(3));
-for i=1:length(T)
-    k_analyt_finite(i,1)=k_0;
-    for t=2:T(i)+1
-        k_analyt_finite(i,t) = alpha*beta*((1-(alpha*beta)^(T(i)+1-t))/(1-(alpha*beta)^(T(i)+1-t+1)))*k_analyt_finite(i,t-1)^alpha;
-        c_analyt_finite(i,1) = k_0^alpha +(1-delta)*k_analyt_finite(i,1) - k_analyt_finite(i,2);
-        c_analyt_finite(i,t) = ((1-alpha*beta)/(1-(alpha*beta)^(T(i)-t+1)))*k_analyt_finite(i,t)^alpha;
-    end
-end
 
 
-
-T=15;
-k_analyt = zeros(1,T);
-c_analyt = zeros(1,T);
-k_analyt(1) = k_0;
-
-
-
-for t=2:T+1
-    k_analyt(t) = alpha*beta*k_analyt(t-1)^alpha;
-    c_analyt(t) = (1-alpha*beta)*k_analyt(t)^alpha;
-end
-
-
-hold on 
-plot(1:16, k_analyt);
-plot(1:16, c_analyt);
-xlabel('Time','FontSize',10);
-ylabel('Value','FontSize',10);
-legend('Capital','Consumption');
-hold off
-
-
-
-
-% ==============
-% 4. Solve deterministic sequence
-% ==============
-
-% as usual we need an initial guess for the sequences of k and c - here we
-% just use steady state
-x0=[kbar*ones(T,1);cbar*ones(T,1)];
 %%
 % ==============
 % 4. Figures
@@ -253,12 +226,19 @@ x0=[kbar*ones(T,1);cbar*ones(T,1)];
 % plot policy function
 figure(1)
 % levels
-subplot(2,1,1)
-title('Policy functions')
-hold on
-plot(k_lin,k_lina) %% here is a graph of k'(k)
+subplot(2,1,1); subplot
+title('Policy functions');
+hold on;
+plot(k_lin,k_lina); %% here is a graph of k'(k)
+plot(k_lin_num',k_lina_num');
 xlabel('k_{t}','FontSize',10);
 ylabel('k_{t+1}','FontSize',10);
+subplot (2,1,2);
+title('Percentage of difference');
+plot(k_lin,(k_lina-k_lina_num)/k_lina);
+xlabel('k_{t}','FontSize',10);
+ylabel('% of difference','FontSize',10);
+%plot(k_lin_num,k_lina_num);
 hold off
 
 %%
