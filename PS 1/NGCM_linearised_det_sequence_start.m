@@ -119,10 +119,18 @@ end
 
 % calculate the deterministic transition  using the linearised policy
 % functions, and law of motion
+%Here is generating a sequence of k from the policy function
 k_lin(1)=k_0;
 for t=2:T
     c_lin(t-1)=polfunc*((k_lin(t-1)-kbar)/kbar)*cbar + cbar;
-    k_lin(t)=k_lin(t-1)^alpha +(1-delta)*k_lin(t-1) - c_lin(t-1)
+    k_lin(t)=k_lin(t-1)^alpha +(1-delta)*k_lin(t-1) - c_lin(t-1);
+end
+
+%Here is generating a sequence of k lagged by 1 unit of time 
+k_lina(1)=k_lin(1,2);
+for t=2:(T)
+    c_lina(t-1)=polfunc*((k_lina(t-1)-kbar)/kbar)*cbar + cbar;
+    k_lina(t)=k_lina(t-1)^alpha +(1-delta)*k_lina(t-1) - c_lina(t-1);
 end
 
 
@@ -189,8 +197,7 @@ figure(1)
 subplot(2,1,1)
 title('Policy functions')
 hold on
-time = linspace (1,10,100);
-plot(time,k_lin)
+plot(k_lin,k_lina) %% here is a graph of k'(k)
 
 % plot the transition
 figure(2)
