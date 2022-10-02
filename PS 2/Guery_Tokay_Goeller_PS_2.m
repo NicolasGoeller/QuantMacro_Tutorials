@@ -12,7 +12,7 @@ addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem se
 % ============
 % parameters
 % ============
-theta=0.4 % capital share
+theta=0.4; % capital share
 beta = 0.99; % discount factor
 rho = 0.95;   % persistence of TFP shock
 gamma = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
@@ -36,14 +36,14 @@ kbar=((1/beta-1+delta)/(theta))^(1/(theta-1));
 % ==============
 
 % center the grid around mean of capital non-stochastic steady state
-kbar=((1/beta-1+delta)/(theta))^(1/(theta-1))
+kbar=((1/beta-1+delta)/(theta))^(1/(theta-1));
 % the grid
 if delta==1
     if linear==1
         kgrid=linspace(kbar/2,2*kbar,N);
     else
         temp=linspace(0,0.5,N).^5/0.5^5*(2*kbar-kbar/2);
-        kgrid=kbar/2+temp
+        kgrid=kbar/2+temp;
     end
 else
     kgrid=linspace(kbar/4 ,2*kbar,N);
