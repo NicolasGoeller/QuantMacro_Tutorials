@@ -1,7 +1,7 @@
 
 
     % function that gives rhs of bellman equation
-    function xx=Valuefun(kprime,kgrid,k,theta,gamma,V,delta,beta)
+        function xx=Valuefunpos(kprime,kgrid,k,theta,gamma,V,delta,beta)
     c=k.^theta+(1-delta)*k-kprime;
     if c<0
         xx=-10000000;
