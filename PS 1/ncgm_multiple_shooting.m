@@ -18,6 +18,8 @@ kT_results = []; %kT estimate for initial value of c0=c0^j : kT_results(j)=kT^j=
 k1T_results = []; %estimate useful to approximate the derivative
 kT_results_error = []; %kT_results_error(i) give the error value for the ith shot (this is the objective function)
 k1T_results_error = []; %useful to approx the derivative
+c0shots = []; %vector with the consecutive guesses of c0
+c0shots = [c0 ; c0shots];
 
 err = abs(k(T+1)-kbar);
 
@@ -47,7 +49,9 @@ while err>criter_V %convergence criteria
     
     c0new = c0 - kT_results_error(i)/deriv_estimate;
     c0=c0new;
+    c0shots = [c0shots;c0]
     err=abs(k(T+1)-kbar);
     i=i+1;
+
 end
-out = c0;
+out = c0shots;

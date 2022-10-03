@@ -45,7 +45,7 @@ i =1;
 
 %c0Low=0.8*cbar;
 %c0Up=1.2*cbar;
-c0=0.5*cbar;
+c0=0.001*cbar;
 % c02=0.51*cbar;
 % 
 % %initialization pour first shot

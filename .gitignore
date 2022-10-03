@@ -1,6 +1,7 @@
 ## ignore pdfs
 
 *.pdf
+*.zip
 
 
 # Windows default autosave extension
