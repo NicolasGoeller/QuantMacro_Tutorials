@@ -121,10 +121,11 @@ while dV>criter_V
     iter=iter+1;
     for i=1:N % loop over capital today
         for j=1:N %... and over capital tomorrow
-            VV(i,j)=value; % calculate value for each i,j
+            VV(i,j)=valuefun(, kgrid, kgrid(:,j), alpha, sigma, V, delta, beta); % calculate value for each i,j
         end
         % take maximum over capital tomorrow
-        [ xxxx FILL THIS IN xxxx ]
+        % IS this sum columnswise and take the one with max???
+        Vnew = max()%[ xxxx FILL THIS IN xxxx ]
         % record policy function
         [ xxxx FILL THIS IN xxxx ]
     end
