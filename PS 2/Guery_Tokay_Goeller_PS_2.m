@@ -12,10 +12,10 @@ addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem se
 % ============
 % parameters
 % ============
-theta=0.4; % capital share
+alpha=0.4; % capital share - this is alpha
 beta = 0.99; % discount factor
 rho = 0.95;   % persistence of TFP shock
-gamma = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
+sigma = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=1;
 
 % ============
@@ -28,7 +28,7 @@ N=50; % number of grid points
 linear=1; % grid linear or not
 
 %mean of capital non-stochastic steady state
-kbar=((1/beta-1+delta)/(theta))^(1/(theta-1));
+kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1));
 
 
 % ==============
@@ -36,22 +36,33 @@ kbar=((1/beta-1+delta)/(theta))^(1/(theta-1));
 % ==============
 
 % center the grid around mean of capital non-stochastic steady state
-kbar=((1/beta-1+delta)/(theta))^(1/(theta-1));
+kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1));
 % the grid
 if delta==1
     if linear==1
+        % linear sequence kbar -2kbar in N steps
         kgrid=linspace(kbar/2,2*kbar,N);
     else
+        % linear sequence 0-0.5 in N steps, divided by 0.5 all to the power
+        % of 5; times 1.5kbar
         temp=linspace(0,0.5,N).^5/0.5^5*(2*kbar-kbar/2);
+        % 0.5kbar + temp
         kgrid=kbar/2+temp;
     end
 else
+    % if delta ~= 1, linear sequence 0.25kbar-2kbar in N steps
     kgrid=linspace(kbar/4 ,2*kbar,N);
 end
 
 % ==============
 % 1. analytical case delta=1, finite T and infinite T
 % ==============
+
+alpha=0.4; % capital share - this is alpha
+beta = 0.99; % discount factor
+rho = 0.95;   % persistence of TFP shock
+sigma = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
+delta=0.1;
 
 % a. analytical policies, finite and infinite horizon
 
@@ -62,18 +73,18 @@ if delta==1 % only makes sense for delta=1
     k_analyt(1)=k_0;
     k_analyt_finite(1)=k_0;
     for t=2:T
-        k_analyt(t)=(theta*beta)*k_analyt(t-1)^theta;
+        k_analyt(t)=(alpha*beta)*k_analyt(t-1)^alpha;
         temp=0;
         if t<T
             for i=t:T-1
-                temp=theta*beta*(1+temp);
+                temp=alpha*beta*(1+temp);
             end
         end
         coef(t)=temp/(1+temp);
-        k_analyt_finite(t)=coef(t)*k_analyt_finite(t-1)^theta;
+        k_analyt_finite(t)=coef(t)*k_analyt_finite(t-1)^alpha;
     end
     for i=1:N
-        kprime_analyt(i)=(theta*beta)*kgrid(i)^theta;
+        kprime_analyt(i)=(alpha*beta)*kgrid(i)^alpha;
     end
 end
 
@@ -81,14 +92,18 @@ end
 % 2. Value function iteration (solve with and w/o Howard / policy function iteration), infinite T
 % ==============
 
+%pre-allocate matrices c, u for speed
+u = zeros(N,N);
+c = zeros(N,N);
+
 % one period return
 for i=1:N
-    for j=1:N
-        c(i,j)= [ xxxx FILL THIS IN xxxx ]
+    for j=1:N %Think if kgrid(j) is correct or should maybe be kprime
+        c(i,j)= kgrid(i)^alpha*pshock(i) - kgrid(j) + (1-delta)*kgrid(i);
         if c(i,j)>0
-            u(i,j)=[ xxxx FILL THIS IN xxxx ]
+            u(i,j)=(c(i,j)^(1-sigma) -1)/(1-sigma);
         else
-            u(i,j)=-1e50*((kgrid(i)^theta+(1-delta)*kgrid(i)-kgrid(j))<=0);
+            u(i,j)=-1e50*((kgrid(i)^alpha+(1-delta)*kgrid(i)-kgrid(j))<=0);
         end
     end
 end
@@ -170,7 +185,7 @@ while dV>criter_V
     kprimelow=min(kgrid); kprimehigh=1.3*min(kgrid);
     for i=1:N % loop over capital today
         % find maximum over capital tomorrow - now using interpolation
-        [kprime_VFI_cont(i),Vnew(i,1)]=fminsearch(@(x) Valuefun(x,kgrid,kgrid(i),theta,gamma,V,delta,beta),kprime_VFI_cont(i),options);
+        [kprime_VFI_cont(i),Vnew(i,1)]=fminsearch(@(x) Valuefun(x,kgrid,kgrid(i),alpha,sigma,V,delta,beta),kprime_VFI_cont(i),options);
     end
     Vnew=-Vnew; % take negative as Valuefun is for minimisation
     % calculate convergence criterion
@@ -184,8 +199,8 @@ t_fmins=toc;
 
 % with Golden Search
 dV=1;
-ctemp=kgrid.^theta+(1-delta)*kgrid;
-V=V_disc_VFI;%(ctemp.^(1-gamma)-1)/(1-gamma)
+ctemp=kgrid.^alpha+(1-delta)*kgrid;
+V=V_disc_VFI;%(ctemp.^(1-sigma)-1)/(1-sigma)
 iter=0;
 tic
 while dV>criter_V
@@ -200,10 +215,10 @@ while dV>criter_V
         end
         b1=kprimelow+alpha1*(kprimehigh-kprimelow);
         b2=kprimelow+alpha2*(kprimehigh-kprimelow);
-        Vlow=Valuefunpos(kprimelow,kgrid,kgrid(i),theta,gamma,V,delta,beta);
-        Vhigh=Valuefunpos(kprimehigh,kgrid,kgrid(i),theta,gamma,V,delta,beta);
-        Vb1=Valuefunpos(b1,kgrid,kgrid(i),theta,gamma,V,delta,beta);
-        Vb2=Valuefunpos(b2,kgrid,kgrid(i),theta,gamma,V,delta,beta);
+        Vlow=Valuefunpos(kprimelow,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+        Vhigh=Valuefunpos(kprimehigh,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+        Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+        Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
         dk=1;
         criter_k=1e-12;
         while dk>criter_k
@@ -258,8 +273,8 @@ figure(1)
 % levels
 subplot(2,1,1)
 hold on
-if delta==1 && abs(gamma-1)<0.001
-    kprime_analyt_pol=theta*beta*kgrid.^theta;
+if delta==1 && abs(sigma-1)<0.001
+    kprime_analyt_pol=alpha*beta*kgrid.^alpha;
     plot(kgrid,kprime_analyt_pol,'b-','Linewidth',1)
 end
 plot(kgrid,kprime_VFI,'k-','Linewidth',1)
