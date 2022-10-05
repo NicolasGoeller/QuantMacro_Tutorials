@@ -98,11 +98,13 @@ c = zeros(N,N);
 
 % one period return
 for i=1:N
-    for j=1:N %Think if kgrid(j) is correct or should maybe be kprime
+    for j=1:N %Think if kgrid(j) is correct or should maybe be kprime for the - kgrid(j)
         c(i,j)= kgrid(i)^alpha*pshock(i) - kgrid(j) + (1-delta)*kgrid(i);
         if c(i,j)>0
             u(i,j)=(c(i,j)^(1-sigma) -1)/(1-sigma);
         else
+            %But I think the above should be correct, bc of same structure
+            %here
             u(i,j)=-1e50*((kgrid(i)^alpha+(1-delta)*kgrid(i)-kgrid(j))<=0);
         end
     end
@@ -119,10 +121,11 @@ while dV>criter_V
     iter=iter+1;
     for i=1:N % loop over capital today
         for j=1:N %... and over capital tomorrow
-            VV(i,j)=[ xxxx FILL THIS IN xxxx ]; % calculate value for each i,j
+            VV(i,j)=valuefun(, kgrid, kgrid(:,j), alpha, sigma, V, delta, beta); % calculate value for each i,j
         end
         % take maximum over capital tomorrow
-        [ xxxx FILL THIS IN xxxx ]
+        % IS this sum columnswise and take the one with max???
+        Vnew = max()%[ xxxx FILL THIS IN xxxx ]
         % record policy function
         [ xxxx FILL THIS IN xxxx ]
     end
@@ -140,7 +143,8 @@ while dV>criter_V
         end
     end
     
-    % calculate convergence criterion
+    % calculate convergence criterion - why the double max() here?
+    % but basically, we stop if the old-new difference in values is small
     dV=max(max(abs(Vnew-V)));
     % updated value function
     V=Vnew;
