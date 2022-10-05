@@ -22,8 +22,8 @@ delta=0.1;
 % options and convergence criteria
 % ============
 
-Howard =0; % set to 1 if you want to do policy fct iteration / Howard improvement
-criter_V = 1e-7; % conv criterion for value function
+Howard =1; % set to 1 if you want to do policy fct iteration / Howard improvement
+criter_V = 1e-6; % conv criterion for value function
 N=50; % number of grid points
 linear=1; % grid linear or not
 
@@ -88,7 +88,7 @@ if delta==1 % only makes sense for delta=1
         kprime_analyt(i)=(alpha*beta)*kgrid(i)^alpha;
     end
 end
-%%
+
 % ==============
 % 2. Value function iteration (solve with and w/o Howard / policy function iteration), infinite T
 % ==============
@@ -121,6 +121,7 @@ V = zeros(1,N);
 VV = zeros(N,N);
 Vnew = zeros(1,N);
 kprime = zeros(1,N);
+Vnewhow = zeros(1,N);
 iter=0;
 tic
 
@@ -130,31 +131,31 @@ while dV>criter_V
     for i=1:N % loop over capital today
         for j=1:N %... and over capital tomorrow
             VV(i,j)= u(i,j) + beta*V(j); %this is without the interpolation
-            %valuefun(kgrid(j), kgrid, kgrid(i), alpha, sigma, V, delta, beta); % calculate value for each i,j
         end
         % take maximum over capital tomorrow
-        % IS this sum columnwise and take the one with max???
         [Vnew(i), maxI]= max(VV(i,:));
-        %[max_V, max_I] = max(sum(VV, 2));
-        %Vnew = VV(:, max_I);%[ xxxx FILL THIS IN xxxx ]
         % record policy function - doesnt make sense
         kprime(i) = kgrid(maxI);
     end
     % Howard - doesn't help much here
-    if Howard==1 && iter>3
+    if Howard==1 && iter>30
         dVV=1;
         while dVV>criter_V
             for i=1:N
-                %Vnewhow(i)=[ xxxx FILL THIS IN xxxx ]
+                temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
+                temp = (temp^(1-sigma) -1)/(1-sigma);
+                Vnewhow(i)=temp + beta*Vnew(i);
                 clear temp
             end
             dVV=max(max(abs(Vnewhow-Vnew)));
             %disp(dVV)
             Vnew=Vnewhow;
+            disp("dVV")
+            disp(dVV)
         end
     end
     
-    % calculate convergence criterion - why the double max() here?
+    % calculate convergence criterion
     % but basically, we stop if the old-new difference in values is small
     dV=max(max(abs(Vnew-V)));
     % updated value function
@@ -167,12 +168,15 @@ V_disc_VFI=V;
 toc
 
 %% Build plots for policy functions - Plot policy function k'(k)
-
-
+hold on
+title("K' policy function plot")
 plot(kgrid, kprime), xlabel('Capital values at t'), ylabel('Capital level at t+1');
-
+hold off
+%%
+hold on
+title("Value function plot by capital values")
 plot(kgrid, V), xlabel('Capital values at t'), ylabel('Value function result at t');
-
+hold off
 %%
 
 % Euler equation errors in percent
@@ -187,7 +191,10 @@ margprod=alpha.*kprime.^(alpha-1) + 1 - delta;
 EEerror_disc=(c1 - beta.*margprod.^(-1/sigma).*c2)./c1;
 maxEEerror_disc=max(abs(EEerror_disc));
 
-plot(kgrid, EEerror_disc)
+hold on
+title("Euler equation error with corresponding values")
+plot(kgrid, EEerror_disc), xlabel('Capital values at t'), ylabel('Euler equation error');
+hold off
 %%
 % ==============
 % 3. Value function iteration with interpolation
