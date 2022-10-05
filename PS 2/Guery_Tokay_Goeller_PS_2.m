@@ -107,6 +107,8 @@ for i=1:N
             %But I think the above should be correct, bc of same structure
             %here
             u(i,j)=-1e50*((kgrid(i)^alpha+(1-delta)*kgrid(i)-kgrid(j))<=0);
+            %we penalize the negative value of c by giving them an utility
+            %of minus infinity
         end
     end
 end
@@ -122,6 +124,8 @@ VV = zeros(N,N);
 Vnew = zeros(1,N);
 kprime = zeros(1,N);
 Vnewhow = zeros(1,N);
+index = zeros(1,N); %stores the index of the optimal policy kprime(kgrid(i))
+%kgrid(index(i))=kprime(i)
 iter=0;
 tic
 
@@ -134,30 +138,49 @@ while dV>criter_V
         end
         % take maximum over capital tomorrow
         [Vnew(i), maxI]= max(VV(i,:));
+        index(i) = maxI;
         % record policy function - doesnt make sense
         kprime(i) = kgrid(maxI);
     end
+    %dV =max(abs(Vnew-V)); %new-Corentin
     % Howard - doesn't help much here
-    if Howard==1 && iter>30
-        dVV=1;
-        while dVV>criter_V
-            for i=1:N
-                temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
-                temp = (temp^(1-sigma) -1)/(1-sigma);
-                Vnewhow(i)=temp + beta*Vnew(i);
-                clear temp
-            end
-            dVV=max(max(abs(Vnewhow-Vnew)));
-            %disp(dVV)
-            Vnew=Vnewhow;
-            disp("dVV")
-            disp(dVV)
+    if Howard==1 && iter>30 %dV<criter_V*10^3  
+        %k_mid_convergence = iter;
+%         dVV=1;
+%         while dVV>criter_V
+%             for i=1:N
+%                 temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
+%                 temp = (temp^(1-sigma) -1)/(1-sigma);
+%                 Vnewhow(i)=temp + beta*Vnew(i);
+%                 clear temp
+%             end
+%             dVV=max(max(abs(Vnewhow-Vnew)));
+%             %disp(dVV)
+%             Vnew=Vnewhow;
+%             disp("dVV")
+%             disp(dVV)
+%         end
+        for i=1:N %new - Corentin
+            temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
+            temp = (temp^(1-sigma) -1)/(1-sigma);
+            %[V_test , h] = max((u(i,:)+beta*Vnew));
+            %gives us the result of the optimal policy for a given i and a
+            %given V : V_test solves the maximization problem
+            Vnewhow(i)=temp + beta*Vnew(index(i)); %Vnew(index(i))=V evaluated in kprime(i)
+            clear temp
         end
-    end
+        dV=max(abs(Vnewhow-Vnew));
+        Vnew=Vnewhow;
+        disp("dVHoward");
+        disp(dV);
+        iter = iter+1; 
+        %we count 1 loop with policy function iteration as one iteration to
+        %compare with the case without howard
+    end %end of new-Corentin
     
     % calculate convergence criterion
     % but basically, we stop if the old-new difference in values is small
-    dV=max(max(abs(Vnew-V)));
+    dV=max(abs(Vnew-V)); %works also without doubling max
     % updated value function
     V=Vnew;
     disp('dV')
