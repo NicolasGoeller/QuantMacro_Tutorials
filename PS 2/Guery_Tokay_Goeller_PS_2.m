@@ -6,8 +6,8 @@
 clear
 % close all figures
 close all
-addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem sets\PS RBC')
-addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem sets')
+%addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem sets\PS RBC')
+%addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem sets')
 
 % ============
 % parameters
@@ -16,7 +16,7 @@ alpha=0.4; % capital share - this is alpha
 beta = 0.99; % discount factor
 rho = 0.95;   % persistence of TFP shock
 sigma = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
-delta=1;
+delta=0.1;
 
 % ============
 % options and convergence criteria
@@ -29,6 +29,7 @@ linear=1; % grid linear or not
 
 %mean of capital non-stochastic steady state
 kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1));
+k_0 = 0.75*kbar;
 
 
 % ==============
@@ -87,7 +88,7 @@ if delta==1 % only makes sense for delta=1
         kprime_analyt(i)=(alpha*beta)*kgrid(i)^alpha;
     end
 end
-
+%%
 % ==============
 % 2. Value function iteration (solve with and w/o Howard / policy function iteration), infinite T
 % ==============
@@ -99,7 +100,7 @@ c = zeros(N,N);
 % one period return
 for i=1:N
     for j=1:N %Think if kgrid(j) is correct or should maybe be kprime for the - kgrid(j)
-        c(i,j)= kgrid(i)^alpha*pshock(i) - kgrid(j) + (1-delta)*kgrid(i);
+        c(i,j)= kgrid(i)^alpha - kgrid(j) + (1-delta)*kgrid(i);
         if c(i,j)>0
             u(i,j)=(c(i,j)^(1-sigma) -1)/(1-sigma);
         else
@@ -110,9 +111,16 @@ for i=1:N
     end
 end
 
-% initial guesses
+% initial guesses and preallocations
 dV=1;
-V=[ xxxx FILL THIS IN xxxx ]
+
+%V= k_0^alpha - kgrid + (1-delta)*k_0;
+%V= (V.^(1-sigma) -1)/(1-sigma);
+% Alternative initial value definition
+V = zeros(1,N);
+VV = zeros(N,N);
+Vnew = zeros(1,N);
+kprime = zeros(1,N);
 iter=0;
 tic
 
@@ -121,23 +129,26 @@ while dV>criter_V
     iter=iter+1;
     for i=1:N % loop over capital today
         for j=1:N %... and over capital tomorrow
-            VV(i,j)=valuefun(, kgrid, kgrid(:,j), alpha, sigma, V, delta, beta); % calculate value for each i,j
+            VV(i,j)= u(i,j) + beta*V(j); %this is without the interpolation
+            %valuefun(kgrid(j), kgrid, kgrid(i), alpha, sigma, V, delta, beta); % calculate value for each i,j
         end
         % take maximum over capital tomorrow
-        % IS this sum columnswise and take the one with max???
-        Vnew = max()%[ xxxx FILL THIS IN xxxx ]
-        % record policy function
-        [ xxxx FILL THIS IN xxxx ]
+        % IS this sum columnwise and take the one with max???
+        [Vnew(i), maxI]= max(VV(i,:));
+        %[max_V, max_I] = max(sum(VV, 2));
+        %Vnew = VV(:, max_I);%[ xxxx FILL THIS IN xxxx ]
+        % record policy function - doesnt make sense
+        kprime(i) = kgrid(maxI);
     end
     % Howard - doesn't help much here
     if Howard==1 && iter>3
         dVV=1;
         while dVV>criter_V
             for i=1:N
-                Vnewhow(i)=[ xxxx FILL THIS IN xxxx ]
+                %Vnewhow(i)=[ xxxx FILL THIS IN xxxx ]
                 clear temp
             end
-            dVV=max(max(abs(Vnewhow-Vnew)))
+            dVV=max(max(abs(Vnewhow-Vnew)));
             %disp(dVV)
             Vnew=Vnewhow;
         end
@@ -155,18 +166,29 @@ end
 V_disc_VFI=V;
 toc
 
+%% Build plots for policy functions - Plot policy function k'(k)
+
+
+plot(kgrid, kprime), xlabel('Capital values at t'), ylabel('Capital level at t+1');
+
+plot(kgrid, V), xlabel('Capital values at t'), ylabel('Value function result at t');
+
+%%
+
 % Euler equation errors in percent
 
 % consumption vector today
-c1=[ xxxx FILL THIS IN xxxx ]
+c1= kgrid.^alpha + (1- delta)*kgrid - kprime;
 % consumption vector at choice kprime tomorrow
-c2=[ xxxx FILL THIS IN xxxx ]
+c2= interp1(kgrid, c1, kprime,'linear','extrap');
 % marginal productivity
-margprod=[ xxxx FILL THIS IN xxxx ]
+margprod=alpha.*kprime.^(alpha-1) + 1 - delta;
 
-EEerror_disc=[ xxxx FILL THIS IN xxxx ]
-maxEEerror_disc=max(abs(EEerror_disc))
+EEerror_disc=(c1 - beta.*margprod.^(-1/sigma).*c2)./c1;
+maxEEerror_disc=max(abs(EEerror_disc));
 
+plot(kgrid, EEerror_disc)
+%%
 % ==============
 % 3. Value function iteration with interpolation
 % ==============
@@ -213,9 +235,11 @@ while dV>criter_V
     for i=1:N % loop over capital today
         
         if i==1
-            kprimelow=min(kgrid); kprimehigh=max(kgrid);
+            kprimelow=min(kgrid); 
+            kprimehigh=max(kgrid);
         else
-            kprimelow=max(kprimelow,min(kgrid)); kprimehigh=1.2*kprimelow;
+            kprimelow=max(kprimelow,min(kgrid)); 
+            kprimehigh=1.2*kprimelow;
         end
         b1=kprimelow+alpha1*(kprimehigh-kprimelow);
         b2=kprimelow+alpha2*(kprimehigh-kprimelow);
@@ -229,7 +253,7 @@ while dV>criter_V
         % use golden search
         if Vb2>Vb1                                            
         kprimelow=[ xxxx FILL THIS IN xxxx ]; Vlow=[ xxxx FILL THIS IN xxxx ];
-        b1=[ xxxx FILL THIS IN xxxx ];Vb1=[ xxxx FILL THIS IN xxxx ]2;
+        %b1=[ xxxx FILL THIS IN xxxx ];Vb1=[ xxxx FILL THIS IN xxxx ]2;
         b2=[ xxxx FILL THIS IN xxxx ];
         Vb2=[ xxxx FILL THIS IN xxxx ];
         else
