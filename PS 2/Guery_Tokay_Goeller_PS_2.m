@@ -22,7 +22,7 @@ delta=0.1;
 % options and convergence criteria
 % ============
 
-Howard =1; % set to 1 if you want to do policy fct iteration / Howard improvement
+Howard =0; % set to 1 if you want to do policy fct iteration / Howard improvement
 criter_V = 1e-6; % conv criterion for value function
 N=50; % number of grid points
 linear=1; % grid linear or not
@@ -188,6 +188,7 @@ while dV>criter_V
 end
 
 V_disc_VFI=V;
+kprime_VFI = kprime
 toc
 
 %% Build plots for policy functions - Plot policy function k'(k)
@@ -225,11 +226,12 @@ hold off
 % set options for fminsearch
 options=optimset('MaxIter',5000,'MaxFunEval',5000,'TolFun',1e-12);
 % initial guesses
+
 dV=1;
 V=V_disc_VFI;%zeros(N,1);
 iter=0;
 tic
-kprime_VFI_cont=kprime;%kprime_VFI; %initial guess
+kprime_VFI_cont=kprime_VFI; %initial guess
 
         alpha1 = (3-sqrt(5))/2;
         alpha2 = (sqrt(5)-1)/2;
@@ -332,7 +334,7 @@ margprod=[ xxxx FILL THIS IN xxxx ]
 EEerror_cont=[ xxxx FILL THIS IN xxxx ]
 maxEEerror_cont=max(abs(EEerror_cont));
 
-
+%%
 % ==============
 % Figures
 % ==============
@@ -340,11 +342,20 @@ maxEEerror_cont=max(abs(EEerror_cont));
 figure(1)
 % levels
 subplot(2,1,1)
+title("K' policy function plot with Golden Search");
 hold on
 if delta==1 && abs(sigma-1)<0.001
     kprime_analyt_pol=alpha*beta*kgrid.^alpha;
     plot(kgrid,kprime_analyt_pol,'b-','Linewidth',1)
 end
-plot(kgrid,kprime_VFI,'k-','Linewidth',1)
-plot(kgrid,kprime_VFI_cont,'k--','Linewidth',1)
-plot(kgrid,kprime_VFI_contG,'k--','Linewidth',1)
+
+%plot(kgrid,kprime_VFI,'k-','Linewidth',1)
+%plot(kgrid,kprime_VFI_cont,'k--','Linewidth',1)
+%plot(kgrid,kprime_VFI_contG,'k--','Linewidth',1)
+plot(kgrid, kprime_VFI, kgrid, kprime_VFI_contG)
+xlabel('Capital values at t'), ylabel('Capital values at t+1');
+
+h = legend('VFI path', 'Golden Search path' ,'Location', 'best','Orientation','Vertical');
+h.Title.String = 'Search methods';
+
+set(h,'fontsize',12,'Interpreter','Latex')
