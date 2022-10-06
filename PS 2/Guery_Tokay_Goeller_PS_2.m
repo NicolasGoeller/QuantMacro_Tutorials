@@ -22,7 +22,7 @@ delta=0.1;
 % options and convergence criteria
 % ============
 
-Howard =0; % set to 1 if you want to do policy fct iteration / Howard improvement
+Howard =1; % set to 1 if you want to do policy fct iteration / Howard improvement
 criter_V = 1e-6; % conv criterion for value function
 N=50; % number of grid points
 linear=1; % grid linear or not
@@ -160,6 +160,8 @@ while dV>criter_V
 %             disp("dVV")
 %             disp(dVV)
 %         end
+        dVV=1;
+        while dVV>criter_V
         for i=1:N %new - Corentin
             temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
             temp = (temp^(1-sigma) -1)/(1-sigma);
@@ -169,11 +171,19 @@ while dV>criter_V
             Vnewhow(i)=temp + beta*Vnew(index(i)); %Vnew(index(i))=V evaluated in kprime(i)
             clear temp
         end
-        dV=max(abs(Vnewhow-Vnew));
+        dVV=max(abs(Vnewhow-Vnew));
         Vnew=Vnewhow;
         disp("dVHoward");
         disp(dV);
-        iter = iter+1; 
+         
+
+        end
+%         dV=max(abs(Vnewhow-Vnew));
+%         Vnew=Vnewhow;
+%         disp("dVHoward");
+%         disp(dV);
+%         iter = iter+1; 
+
         %we count 1 loop with policy function iteration as one iteration to
         %compare with the case without howard
     end %end of new-Corentin
@@ -185,6 +195,7 @@ while dV>criter_V
     V=Vnew;
     disp('dV')
     disp(dV)
+    iter=iter+1;
 end
 
 V_disc_VFI=V;
@@ -243,7 +254,7 @@ while dV>criter_V
     kprimelow=min(kgrid); kprimehigh=1.3*min(kgrid);
     for i=1:N % loop over capital today
         % find maximum over capital tomorrow - now using interpolation
-        [kprime_VFI_cont(i),Vnew(i,1)]=fminsearch(@(x) Valuefun(x,kgrid,kgrid(i),alpha,sigma,V,delta,beta),kprime_VFI_cont(i),options);
+        [kprime_VFI_cont(i),Vnew(i)]=fminsearch(@(x) Valuefun(x,kgrid,kgrid(i),alpha,sigma,V,delta,beta),kprime_VFI_cont(i),options);
     end
     Vnew=-Vnew; % take negative as Valuefun is for minimisation
     % calculate convergence criterion
@@ -292,15 +303,19 @@ while dV>criter_V
         if Vb2>Vb1                                            
             kprimelow=b1; 
             Vlow=Valuefunpos(kprimelow,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+
             b1=kprimelow+alpha1*(kprimehigh-kprimelow);
             Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+
             b2=kprimelow+alpha2*(kprimehigh-kprimelow);
             Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
         else
             kprimehigh=b2;
             Vhigh=Valuefunpos(kprimehigh,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+
             b2=kprimelow+alpha2*(kprimehigh-kprimelow);
             Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+
             b1=kprimelow+alpha1*(kprimehigh-kprimelow);
             Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
         end
