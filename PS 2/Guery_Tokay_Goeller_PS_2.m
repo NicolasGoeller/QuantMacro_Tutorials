@@ -70,7 +70,6 @@ delta=0.1;
 
 if delta==1 % only makes sense for delta=1
     k_analyt=zeros(1,T);
-    
     k_analyt(1)=k_0;
     k_analyt_finite(1)=k_0;
     for t=2:T
@@ -142,32 +141,13 @@ while dV>criter_V
         % record policy function - doesnt make sense
         kprime(i) = kgrid(maxI);
     end
-    %dV =max(abs(Vnew-V)); %new-Corentin
     % Howard - doesn't help much here
-    if Howard==1 && iter>3 %dV<criter_V*10^3  
-        %k_mid_convergence = iter;
-%         dVV=1;
-%         while dVV>criter_V
-%             for i=1:N
-%                 temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
-%                 temp = (temp^(1-sigma) -1)/(1-sigma);
-%                 Vnewhow(i)=temp + beta*Vnew(i);
-%                 clear temp
-%             end
-%             dVV=max(max(abs(Vnewhow-Vnew)));
-%             %disp(dVV)
-%             Vnew=Vnewhow;
-%             disp("dVV")
-%             disp(dVV)
-%         end
+    if Howard==1 && iter>3 
         dVV=1;
         while dVV>criter_V
-        for i=1:N %new - Corentin
+        for i=1:N 
             temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
             temp = (temp^(1-sigma) -1)/(1-sigma);
-            %[V_test , h] = max((u(i,:)+beta*Vnew));
-            %gives us the result of the optimal policy for a given i and a
-            %given V : V_test solves the maximization problem
             Vnewhow(i)=temp + beta*Vnew(index(i)); %Vnew(index(i))=V evaluated in kprime(i)
             clear temp
         end
@@ -178,16 +158,7 @@ while dV>criter_V
          
 
         end
-%         dV=max(abs(Vnewhow-Vnew));
-%         Vnew=Vnewhow;
-%         disp("dVHoward");
-%         disp(dV);
-%         iter = iter+1; 
-
-        %we count 1 loop with policy function iteration as one iteration to
-        %compare with the case without howard
-    end %end of new-Corentin
-    
+    end 
     % calculate convergence criterion
     % but basically, we stop if the old-new difference in values is small
     dV=max(abs(Vnew-V)); %works also without doubling max
@@ -261,7 +232,7 @@ while dV>criter_V
     % updated value function
     V=Vnew;
     %disp('dV')
-    %disp(dV)%
+    %disp(dV)
 end
 t_fmins=toc;
 %%
