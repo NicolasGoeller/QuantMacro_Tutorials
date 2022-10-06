@@ -199,7 +199,7 @@ while dV>criter_V
 end
 
 V_disc_VFI=V;
-kprime_VFI = kprime
+kprime_VFI = kprime;
 toc
 
 %% Build plots for policy functions - Plot policy function k'(k)
@@ -244,8 +244,7 @@ iter=0;
 tic
 kprime_VFI_cont=kprime_VFI; %initial guess
 
-        alpha1 = (3-sqrt(5))/2;
-        alpha2 = (sqrt(5)-1)/2;
+
 tic
 
 % fminsearch
@@ -272,7 +271,9 @@ ctemp=kgrid.^alpha+(1-delta)*kgrid;
 V=V_disc_VFI;%(ctemp.^(1-sigma)-1)/(1-sigma)
 kprime_VFI_contG = zeros(1,N);
 VnewG = zeros(1,N);
-iter=0;
+iter=0;        
+alpha1 = (3-sqrt(5))/2;
+alpha2 = (sqrt(5)-1)/2;
 tic
 while dV>criter_V
     iter=iter+1;
