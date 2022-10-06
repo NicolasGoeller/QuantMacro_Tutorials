@@ -324,15 +324,21 @@ t_G=toc;
 %%
 
 % Euler equation errors in percent
-% consumption vector today
-c1=[ xxxx FILL THIS IN xxxx ]
-% consumption vector at choice kprime tomorrow
-c2=[ xxxx FILL THIS IN xxxx ]
-% marginal productivity
-margprod=[ xxxx FILL THIS IN xxxx ]
 
-EEerror_cont=[ xxxx FILL THIS IN xxxx ]
+% consumption vector today
+c1_cont= kgrid.^alpha + (1- delta)*kgrid - kprime_VFI_contG;
+% consumption vector at choice kprime tomorrow
+c2_cont= interp1(kgrid, c1_cont, kprime_VFI_contG,'linear','extrap');
+% marginal productivity
+margprod_cont=alpha.*kprime_VFI_contG.^(alpha-1) + 1 - delta;
+
+EEerror_cont=(c1_cont - beta.*margprod_cont.^(-1/sigma).*c2_cont)./c1_cont;
 maxEEerror_cont=max(abs(EEerror_cont));
+
+hold on
+title("Euler equation error with corresponding values - Golden Search")
+plot(kgrid, EEerror_cont), xlabel('Capital values at t'), ylabel('Euler equation error');
+hold off
 
 %%
 % ==============
