@@ -144,7 +144,7 @@ while dV>criter_V
     end
     %dV =max(abs(Vnew-V)); %new-Corentin
     % Howard - doesn't help much here
-    if Howard==1 && iter>30 %dV<criter_V*10^3  
+    if Howard==1 && iter>3 %dV<criter_V*10^3  
         %k_mid_convergence = iter;
 %         dVV=1;
 %         while dVV>criter_V
@@ -226,10 +226,10 @@ hold off
 options=optimset('MaxIter',5000,'MaxFunEval',5000,'TolFun',1e-12);
 % initial guesses
 dV=1;
-V=V_disc_VFI%zeros(N,1);
+V=V_disc_VFI;%zeros(N,1);
 iter=0;
 tic
-kprime_VFI_cont=kprime_VFI; %initial guess
+kprime_VFI_cont=kprime;%kprime_VFI; %initial guess
 
         alpha1 = (3-sqrt(5))/2;
         alpha2 = (sqrt(5)-1)/2;
@@ -252,11 +252,13 @@ while dV>criter_V
     %disp(dV)%
 end
 t_fmins=toc;
-
+%%
 % with Golden Search
 dV=1;
 ctemp=kgrid.^alpha+(1-delta)*kgrid;
 V=V_disc_VFI;%(ctemp.^(1-sigma)-1)/(1-sigma)
+kprime_VFI_contG = zeros(1,N);
+VnewG = zeros(1,N);
 iter=0;
 tic
 while dV>criter_V
@@ -271,26 +273,34 @@ while dV>criter_V
             kprimelow=max(kprimelow,min(kgrid)); 
             kprimehigh=1.2*kprimelow;
         end
-        b1=kprimelow+alpha1*(kprimehigh-kprimelow);
-        b2=kprimelow+alpha2*(kprimehigh-kprimelow);
+        b1=kprimelow+alpha1*(kprimehigh-kprimelow); %lower bound candidate
+        b2=kprimelow+alpha2*(kprimehigh-kprimelow); %upper bound candidate
+        %Starting value function results
         Vlow=Valuefunpos(kprimelow,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
         Vhigh=Valuefunpos(kprimehigh,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+        %Candidate value function results
+        % Lower bound cand result
         Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+        % Upper bound cand result
         Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
         dk=1;
         criter_k=1e-12;
         while dk>criter_k
         % use golden search
         if Vb2>Vb1                                            
-        kprimelow=[ xxxx FILL THIS IN xxxx ]; Vlow=[ xxxx FILL THIS IN xxxx ];
-        %b1=[ xxxx FILL THIS IN xxxx ];Vb1=[ xxxx FILL THIS IN xxxx ]2;
-        b2=[ xxxx FILL THIS IN xxxx ];
-        Vb2=[ xxxx FILL THIS IN xxxx ];
+            kprimelow=b1; 
+            Vlow=Valuefunpos(kprimelow,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+            b1=kprimelow+alpha1*(kprimehigh-kprimelow);
+            Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+            b2=kprimelow+alpha2*(kprimehigh-kprimelow);
+            Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
         else
-        kprimehigh=[ xxxx FILL THIS IN xxxx ];Vhigh=[ xxxx FILL THIS IN xxxx ];
-        b2=[ xxxx FILL THIS IN xxxx ];Vb2=[ xxxx FILL THIS IN xxxx ];
-        b1=[ xxxx FILL THIS IN xxxx ];
-        Vb1=[ xxxx FILL THIS IN xxxx ];
+            kprimehigh=b2;
+            Vhigh=Valuefunpos(kprimehigh,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+            b2=kprimelow+alpha2*(kprimehigh-kprimelow);
+            Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+            b1=kprimelow+alpha1*(kprimehigh-kprimelow);
+            Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
         end
         dk=abs(Vhigh-Vlow);
         end
@@ -309,7 +319,7 @@ while dV>criter_V
 end
 t_G=toc;
 
-
+%%
 
 % Euler equation errors in percent
 % consumption vector today
