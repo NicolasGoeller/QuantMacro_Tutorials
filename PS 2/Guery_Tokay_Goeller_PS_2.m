@@ -188,7 +188,7 @@ while dV>criter_V
 end
 
 V_disc_VFI=V;
-kprime_VFI = kprime
+kprime_VFI = kprime;
 toc
 
 %% Build plots for policy functions - Plot policy function k'(k)
@@ -233,8 +233,7 @@ iter=0;
 tic
 kprime_VFI_cont=kprime_VFI; %initial guess
 
-        alpha1 = (3-sqrt(5))/2;
-        alpha2 = (sqrt(5)-1)/2;
+
 tic
 
 % fminsearch
@@ -243,7 +242,7 @@ while dV>criter_V
     kprimelow=min(kgrid); kprimehigh=1.3*min(kgrid);
     for i=1:N % loop over capital today
         % find maximum over capital tomorrow - now using interpolation
-        [kprime_VFI_cont(i),Vnew(i,1)]=fminsearch(@(x) Valuefun(x,kgrid,kgrid(i),alpha,sigma,V,delta,beta),kprime_VFI_cont(i),options);
+        [kprime_VFI_cont(i),Vnew(i)]=fminsearch(@(x) Valuefun(x,kgrid,kgrid(i),alpha,sigma,V,delta,beta),kprime_VFI_cont(i),options);
     end
     Vnew=-Vnew; % take negative as Valuefun is for minimisation
     % calculate convergence criterion
@@ -261,7 +260,9 @@ ctemp=kgrid.^alpha+(1-delta)*kgrid;
 V=V_disc_VFI;%(ctemp.^(1-sigma)-1)/(1-sigma)
 kprime_VFI_contG = zeros(1,N);
 VnewG = zeros(1,N);
-iter=0;
+iter=0;        
+alpha1 = (3-sqrt(5))/2;
+alpha2 = (sqrt(5)-1)/2;
 tic
 while dV>criter_V
     iter=iter+1;
