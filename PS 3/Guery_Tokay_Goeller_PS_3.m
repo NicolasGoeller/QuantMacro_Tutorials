@@ -67,17 +67,15 @@ end
 % Problem 1 - discretize income process and simulate
 % ==============
 [Z_tauchen, P_tauchen] = tauchen(5,0,0.95,0.007,2);
-rng(0); %fix random number generator
-for j=1:N_sim
-    z_tauchen(j,1)=;
-    for t=2:T
-        z_tauchen(j,t)=sum(cumsum(P_tauchen(z_tauchen(j,t-1),:))<rand(1,N))+1;
-    end
-end
-Z_lev_tauchen=exp(Z_tauchen);
+p = dtmc(P_tauchen);
+X0 = Z_tauchen';
+X = simulate(p,150,"A", Z_tauchen);
+graphplot(p,'ColorEdges',true);
 
-Z_sim_tauchen=Z_lev_tauchen(z_tauchen);
-
+figure;
+simplot(p,X);
+A = zeros(1,lenght(Z_tauchen));
+A=A'
 
 
 disp('Standard devations of Z discrete, continuous')
