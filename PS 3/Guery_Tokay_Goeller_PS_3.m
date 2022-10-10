@@ -13,10 +13,12 @@ close all
 % parameters
 % ============
 alpha=0.4; % capital share - this is alpha
-beta = 0.9; % discount factor
+beta = 0.987; % discount factor
 rho = 0.95;   % persistence of TFP shock
-sigma = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
+gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=0.1;
+sigma = 0.007
+
 
 % ============
 % options and convergence criteria
@@ -98,7 +100,7 @@ disp([mean(rho_emp),rho])
 alpha=0.4; % capital share - this is alpha
 beta = 0.99; % discount factor
 rho = 0.95;   % persistence of TFP shock
-sigma = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
+gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=0.1;
 
 % a. analytical policies, finite and infinite horizon
@@ -137,7 +139,7 @@ for i=1:N
     for j=1:N %Think if kgrid(j) is correct or should maybe be kprime for the - kgrid(j)
         c(i,j)= kgrid(i)^alpha - kgrid(j) + (1-delta)*kgrid(i);
         if c(i,j)>0
-            u(i,j)=(c(i,j)^(1-sigma) -1)/(1-sigma);
+            u(i,j)=(c(i,j)^(1-gamma_c) -1)/(1-gamma_c);
         else
             %But I think the above should be correct, bc of same structure
             %here
@@ -183,7 +185,7 @@ while dV>criter_V
         while dVV>criter_V
         for i=1:N 
             temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
-            temp = (temp^(1-sigma) -1)/(1-sigma);
+            temp = (temp^(1-gamma_c) -1)/(1-gamma_c);
             Vnewhow(i)=temp + beta*Vnew(index(i)); %Vnew(index(i))=V evaluated in kprime(i)
             clear temp
         end
@@ -230,7 +232,7 @@ c2= interp1(kgrid, c1, kprime,'linear','extrap');
 % marginal productivity
 margprod=alpha.*kprime.^(alpha-1) + 1 - delta;
 
-EEerror_disc=(c1 - beta.*margprod.^(-1/sigma).*c2)./c1;
+EEerror_disc=(c1 - beta.*margprod.^(-1/gamma_c).*c2)./c1;
 maxEEerror_disc=max(abs(EEerror_disc));
 
 hold on
@@ -260,7 +262,7 @@ while dV>criter_V
     kprimelow=min(kgrid); kprimehigh=1.3*min(kgrid);
     for i=1:N % loop over capital today
         % find maximum over capital tomorrow - now using interpolation
-        [kprime_VFI_cont(i),Vnew(i)]=fminsearch(@(x) Valuefun(x,kgrid,kgrid(i),alpha,sigma,V,delta,beta),kprime_VFI_cont(i),options);
+        [kprime_VFI_cont(i),Vnew(i)]=fminsearch(@(x) Valuefun(x,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta),kprime_VFI_cont(i),options);
     end
     Vnew=-Vnew; % take negative as Valuefun is for minimisation
     % calculate convergence criterion
@@ -297,35 +299,35 @@ while dV>criter_V
         b1=kprimelow+alpha1*(kprimehigh-kprimelow); %lower bound candidate
         b2=kprimelow+alpha2*(kprimehigh-kprimelow); %upper bound candidate
         %Starting value function results
-        Vlow=Valuefunpos(kprimelow,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
-        Vhigh=Valuefunpos(kprimehigh,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+        Vlow=Valuefunpos(kprimelow,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
+        Vhigh=Valuefunpos(kprimehigh,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
         %Candidate value function results
         % Lower bound cand result
-        Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+        Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
         % Upper bound cand result
-        Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+        Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
         dk=1;
         criter_k=1e-12;
         while dk>criter_k
         % use golden search
         if Vb2>Vb1                                            
             kprimelow=b1; 
-            Vlow=Valuefunpos(kprimelow,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+            Vlow=Valuefunpos(kprimelow,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
 
             b1=kprimelow+alpha1*(kprimehigh-kprimelow);
-            Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+            Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
 
             b2=kprimelow+alpha2*(kprimehigh-kprimelow);
-            Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+            Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
         else
             kprimehigh=b2;
-            Vhigh=Valuefunpos(kprimehigh,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+            Vhigh=Valuefunpos(kprimehigh,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
 
             b2=kprimelow+alpha2*(kprimehigh-kprimelow);
-            Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+            Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
 
             b1=kprimelow+alpha1*(kprimehigh-kprimelow);
-            Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,sigma,V,delta,beta);
+            Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
         end
         dk=abs(Vhigh-Vlow);
         end
@@ -355,7 +357,7 @@ c2_cont= interp1(kgrid, c1_cont, kprime_VFI_contG,'linear','extrap');
 % marginal productivity
 margprod_cont=alpha.*kprime_VFI_contG.^(alpha-1) + 1 - delta;
 
-EEerror_cont=(c1_cont - beta.*margprod_cont.^(-1/sigma).*c2_cont)./c1_cont;
+EEerror_cont=(c1_cont - beta.*margprod_cont.^(-1/gamma_c).*c2_cont)./c1_cont;
 maxEEerror_cont=max(abs(EEerror_cont));
 
 hold on
@@ -373,7 +375,7 @@ figure(1)
 subplot(2,1,1)
 title("K' policy function plot with Golden Search");
 hold on
-if delta==1 && abs(sigma-1)<0.001
+if delta==1 && abs(gamma_c-1)<0.001
     kprime_analyt_pol=alpha*beta*kgrid.^alpha;
     plot(kgrid,kprime_analyt_pol,'b-','Linewidth',1)
 end
@@ -388,3 +390,7 @@ h = legend('VFI path', 'Golden Search path' ,'Location', 'best','Orientation','V
 h.Title.String = 'Search methods';
 
 set(h,'fontsize',12,'Interpreter','Latex')
+
+%%
+
+
