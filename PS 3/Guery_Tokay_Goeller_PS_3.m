@@ -26,10 +26,18 @@ Howard =1; % set to 1 if you want to do policy fct iteration / Howard improvemen
 criter_V = 1e-6; % conv criterion for value function
 N=50; % number of grid points
 linear=1; % grid linear or not
-
+N_sim = 100; % nbr of simulation
+T = 150;%period of transition
 %mean of capital non-stochastic steady state
 kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1));
 k_0 = 0.75*kbar;
+
+
+
+
+
+
+
 
 
 % ==============
@@ -54,6 +62,36 @@ else
     % if delta ~= 1, linear sequence 0.25kbar-2kbar in N steps
     kgrid=linspace(kbar/4 ,2*kbar,N);
 end
+
+
+% Problem 1 - discretize income process and simulate
+% ==============
+[Z_tauchen, P_tauchen] = tauchen(5,0,0.95,0.007,2);
+rng(0); %fix random number generator
+for j=1:N_sim
+    z_tauchen(j,1)=3;
+    for t=2:T
+        z_tauchen(j,t)=sum(cumsum(P_tauchen(z_tauchen(j,t-1),:))<rand(1,N))+1;
+    end
+end
+Z_lev_tauchen=exp(Z_tauchen);
+
+Z_sim_tauchen=Z_lev_tauchen(z_tauchen);
+
+
+
+disp('Standard devations of Z discrete, continuous')
+disp([mean(std(log(Z_sim)')),(sigmaepsilon^2/(1-rho^2))^0.5])
+for i=1:N_sim
+    rho_emp(i)=corr(log(Z_sim(i,1:end-1))',log(Z_sim(i,2:end))');
+end
+disp('Autocorrelation of Z discrete, continuous')
+
+disp([mean(rho_emp),rho])
+
+
+
+
 
 % ==============
 % 1. analytical case delta=1, finite T and infinite T

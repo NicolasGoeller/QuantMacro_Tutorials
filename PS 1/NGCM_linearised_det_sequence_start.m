@@ -195,9 +195,16 @@ k_lina_num2 = ncgm_broyden(x4, jacob4, 1e-6, T4, params);
 k_lina_num = k_lina_num2(1:T4);
 
 
+<<<<<<< Updated upstream
 
 
 %k_lina_num=ncgm_broyden(x4, jacob4, 1e-6, 50, params); %values goes from k1 to kT (k(t) vector)
+=======
+% calculate the deterministic transition  using the linearised policy
+% functions, and law of motion
+%Here is generating a sequence of k from the policy function
+T=50;
+>>>>>>> Stashed changes
 k_lin(1)=k_0;
 for t=2:T
     c_lin(t-1)=polfunc*((k_lin(t-1)-kbar)/kbar)*cbar + cbar; %% compute the linear c from the formula derived in the latex part 3.
@@ -217,6 +224,77 @@ for t=2:(T)
 end
 
 
+<<<<<<< Updated upstream
+=======
+%graphpart 4 q1
+
+
+
+
+% ==============
+% 4. Solve deterministic sequence
+% ==============
+
+% as usual we need an initial guess for the sequences of k and c - here we
+% just use steady state
+x0=[kbar*ones(T,1);cbar*ones(T,1)];
+%%
+% zpath=ones(T,1);
+% zpath(1)=1.01;
+% for i=2:T-1
+%     zpath(i)=exp(log(zpath(i-1)));
+% end
+
+% now we need a function that returns errors of the equation system,
+% constraining k(0)=k_0, and c(T)=cbar
+
+% here we use Broyden's method
+
+%Initial guess for jacobian - use finite difference at steady state
+%sequences of k and c
+%rbc_obj(x,alpha,beta,sigma,delta,kbar,cbar)
+%%
+clear dx J
+for i=1:2*T
+    dx = zeros(2*T,1);
+    dx(i)=x0(i)*0.001;
+    diffF = rbc_obj_start(x0+dx,alpha,beta,sigma,delta,kbar,cbar)-rbc_obj_start(x0,alpha,beta,sigma,delta,kbar,cbar);
+    diffX= dx(i);
+    J(:,i)=[diffF/diffX] ;
+end
+clear x
+%%
+crit=1e-4;
+x=x0;
+f0=rbc_obj_start(x,alpha,beta,sigma,delta,k_0,cbar);
+f=rbc_obj_start(x,alpha,beta,sigma,delta,k_0,cbar);
+%%
+while max(abs(f))>crit
+
+%dx = [xxxx fill this in xxxx] 
+%     dx = zeros(2*T,1);
+%     for i=1:2*T
+%         for j=1:2*T
+%             dx(i)= dx(i)-J(i,j)^(-1)*f(i);
+%         end
+%     end
+    f0 = rbc_obj_start(x,alpha,beta,sigma,delta,k_0,cbar);
+    dx = -J\f; 
+    %dx = dx*(x'*x)/(10*(dx'*dx));
+    %while x+dx<1e-6
+      %  dx=dx/2;
+    %end
+    xn1=max(ones(2*T,1)*1e-8,x+dx);
+    dx=xn1-x;
+    f = rbc_obj_start(xn1,alpha,beta,sigma,delta,k_0,cbar);
+    %J = [] ;
+    J = J + ((f-f0)-J*dx)*dx'/(dx'*dx);
+    %B = B + ((y' - B*s)*s')/(s'*s);
+    x=xn1;
+
+
+end
+>>>>>>> Stashed changes
 
 
 %%
@@ -240,7 +318,7 @@ xlabel('k_{t}','FontSize',10);
 ylabel('% of difference','FontSize',10);
 %plot(k_lin_num,k_lina_num);
 hold off
-
+plot(z,)
 %%
 % plot the transition
 x = 1:1:50;
