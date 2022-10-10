@@ -13,7 +13,7 @@ close all
 % parameters
 % ============
 alpha=0.4; % capital share - this is alpha
-beta = 0.99; % discount factor
+beta = 0.9; % discount factor
 rho = 0.95;   % persistence of TFP shock
 sigma = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=0.1;
@@ -69,7 +69,7 @@ end
 [Z_tauchen, P_tauchen] = tauchen(5,0,0.95,0.007,2);
 rng(0); %fix random number generator
 for j=1:N_sim
-    z_tauchen(j,1)=3;
+    z_tauchen(j,1)=;
     for t=2:T
         z_tauchen(j,t)=sum(cumsum(P_tauchen(z_tauchen(j,t-1),:))<rand(1,N))+1;
     end
