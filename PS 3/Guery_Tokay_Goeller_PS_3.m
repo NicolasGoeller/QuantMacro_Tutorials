@@ -26,7 +26,7 @@ sigma = 0.007
 
 Howard =1; % set to 1 if you want to do policy fct iteration / Howard improvement
 criter_V = 1e-6; % conv criterion for value function
-N=50; % number of grid points
+N=5; % number of grid points
 linear=1; % grid linear or not
 N_sim = 100; % nbr of simulation
 T = 150;%period of transition
@@ -70,26 +70,20 @@ end
 % ==============
 [Z_tauchen, P_tauchen] = tauchen(5,0,0.95,0.007,2);
 p = dtmc(P_tauchen);
-X0 = Z_tauchen';
-X = simulate(p,150,"A", Z_tauchen);
-graphplot(p,'ColorEdges',true);
-
-figure;
-simplot(p,X);
-A = zeros(1,lenght(Z_tauchen));
-A=A'
-
-
-disp('Standard devations of Z discrete, continuous')
-disp([mean(std(log(Z_sim)')),(sigmaepsilon^2/(1-rho^2))^0.5])
-for i=1:N_sim
-    rho_emp(i)=corr(log(Z_sim(i,1:end-1))',log(Z_sim(i,2:end))');
+x0 = [0 0 100 0 0 ];
+numSteps = 150;
+X = simulate(p,numSteps,'X0',x0);
+for i=1:N
+    X(X==i)=Z_tauchen(i,1);
 end
-disp('Autocorrelation of Z discrete, continuous')
 
-disp([mean(rho_emp),rho])
+Mean_X=mean(X,1);
+mean(Mean_X);
+Std_X = std(X);
+[acf,lags] = autocorr(X(:,1));
 
 
+%%
 
 
 
