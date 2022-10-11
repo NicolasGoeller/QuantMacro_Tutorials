@@ -180,7 +180,8 @@ toc
 hold on
 title("K' policy function plot")
 plot(kgrid, kprime), xlabel('Capital values at t'), ylabel('Capital level at t+1');
-h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448');
+h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448', ...
+    'Location', 'best','Orientation','Vertical');
 h.Title.String = 'log(z) values';
 set(h,'fontsize',12,'Interpreter','Latex')
 hold off
@@ -189,7 +190,8 @@ hold off
 hold on
 title("Value function plot by capital values")
 plot(kgrid, V), xlabel('Capital values at t'), ylabel('Value function result at t');
-h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448');
+h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448', ...
+    'Location', 'best','Orientation','Vertical');
 h.Title.String = 'log(z) values';
 set(h,'fontsize',12,'Interpreter','Latex')
 hold off
@@ -214,10 +216,13 @@ for j=1:N
     %maxEEerror_disc(:,j)=max(abs(EEerror_disc(:,j)));
 end 
 
+%Graph of the EE error 
+
 hold on
 title("Euler equation error with corresponding values")
 plot(kgrid, EEerror_disc), xlabel('Capital values at t'), ylabel('Euler equation error');
-h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448');
+h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448', ...
+    'Location', 'best','Orientation','Vertical');
 h.Title.String = 'log(z) values';
 set(h,'fontsize',12,'Interpreter','Latex')
 hold off
