@@ -21,7 +21,7 @@ rho = 0.95;   % persistence of TFP shock
 gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=0.1;
 sigma = 0.007;
-seed()
+%seed()
 
 v = sigma/(sqrt(1-rho^2));
 % ============
@@ -249,9 +249,9 @@ ckrat=cbar/kbar;
 
 
 % order c,k,z
-A=[-gamma_c, beta *(alpha-1)*alpha*kbar^(alpha-1) ; 0 , 1 ];
+A=[-gamma_c, beta*(alpha-1)*((1/beta) - 1+delta), beta*((1/beta) - 1+ delta) ; 0 , 1 , 0 ; 0 ,0 , 1 ];
 
-B= [-sigma , 0 ; -ckrat,(1/beta)];
+B= [-gamma_c , 0 ,0; -ckrat,(1/beta), 1/(beta*alpha) + ((-1+ delta)/alpha); 0,0,rho];
 
 D = inv(A)*B;
 
@@ -263,7 +263,7 @@ aaa=inv(ev); %%% give the invert of the eigen vector matrix
 % number of jump variables - in that case, set BKcond to 1
 
 BKcond = 1;
-eigen = [lambda(1,1) lambda(2,2)];
+eigen = [lambda(1,1) lambda(2,2), lambda(3,3)];
 if all(eigen > 1) || all(eigen < 1)
     BKcond = 0;
 end
