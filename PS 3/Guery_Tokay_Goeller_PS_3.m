@@ -20,7 +20,7 @@ beta = 0.987; % discount factor
 rho = 0.95;   % persistence of TFP shock
 gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=0.1;
-sigma = 0.007
+sigma = 0.007;
 
 
 % ============
@@ -76,7 +76,7 @@ graphplot(p,'ColorEdges',true);
 figure;
 simplot(p,X);
 A = zeros(1,length(Z_tauchen));
-A=A'
+A=A';
 
 
 % disp('Standard devations of Z discrete, continuous')
@@ -123,7 +123,7 @@ V = zeros(M,N);
 VV = zeros(M,M,N);
 Vnew = zeros(M,N);
 kprime = zeros(M,N);
-Vnewhow = zeros(M,N);
+%Vnewhow = zeros(M,N);
 index = zeros(M,N); %stores the index of the optimal policy kprime(kgrid(i))
 %kgrid(index(i))=kprime(i)
 iter=0;
