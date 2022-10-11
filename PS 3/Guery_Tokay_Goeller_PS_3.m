@@ -9,6 +9,9 @@ close all
 %addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem sets\PS RBC')
 %addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem sets')
 
+%% Problem Set 3
+
+
 % ============
 % parameters
 % ============
@@ -26,20 +29,15 @@ sigma = 0.007;
 
 Howard =1; % set to 1 if you want to do policy fct iteration / Howard improvement
 criter_V = 1e-6; % conv criterion for value function
-N=50; % number of grid points
+M=50; % number of grid points
+N=5; % grid for z
 linear=1; % grid linear or not
 N_sim = 100; % nbr of simulation
 N=5;
 T = 150;%period of transition
 %mean of capital non-stochastic steady state
 kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1));
-k_0 = 0.75*kbar;
-
-
-
-
-
-
+k_0 = kbar;
 
 
 
@@ -53,27 +51,27 @@ kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1));
 if delta==1
     if linear==1
         % linear sequence kbar -2kbar in N steps
-        kgrid=linspace(kbar/2,2*kbar,N);
+        kgrid=linspace(kbar*0.85,1.15*kbar,M);
     else
         % linear sequence 0-0.5 in N steps, divided by 0.5 all to the power
         % of 5; times 1.5kbar
-        temp=linspace(0,0.5,N).^5/0.5^5*(2*kbar-kbar/2);
+        temp=linspace(0,0.5,M).^5/0.5^5*(0.85*kbar-1.15*kbar);
         % 0.5kbar + temp
-        kgrid=kbar/2+temp;
+        kgrid=0.85*kbar+temp;
     end
 else
     % if delta ~= 1, linear sequence 0.25kbar-2kbar in N steps
-    kgrid=linspace(kbar/4 ,2*kbar,N);
+    kgrid=linspace(0.85*kbar ,1.15*kbar,M);
 end
 
 
 % Problem 1 - discretize income process and simulate
 % ==============
-[Z_tauchen, P_tauchen] = tauchen(5,0,0.95,0.007,2);
+
+[Z_tauchen, P_tauchen] = tauchen(N,0,rho,sigma,2);
 p = dtmc(P_tauchen);
-x0 = [0 0 100 0 0];
-numSteps = 150;
-X = simulate(p,numSteps,'X0',x0);
+X0 = [0 0 N_sim 0 0]; %simulate N_sim starting at initial value of Z=0 
+X = simulate(p,T,"X0",X0); %X0 define the number of simulation to be made starting with a given initial condition
 for i=1:N 
       X(X==i)=Z_tauchen(i,1);
 end
@@ -82,12 +80,46 @@ a = mean(Mean_X);
 Std_X = std(X);
 b = mean(Std_X);
 [Acf_x,lag] = autocorr(X(:,4));
-
-
 graphplot(p,'ColorEdges',true);
 
+figure;
+simplot(p,X);
+A = zeros(1,length(Z_tauchen));
+A=A';
 
 
+% disp('Standard devations of Z discrete, continuous')
+% disp([mean(std(log(Z_sim)')),(sigmaepsilon^2/(1-rho^2))^0.5])
+% for i=1:N_sim
+%     rho_emp(i)=corr(log(Z_sim(i,1:end-1))',log(Z_sim(i,2:end))');
+% end
+% disp('Autocorrelation of Z discrete, continuous')
+% 
+% disp([mean(rho_emp),rho])
+
+
+%% Problem 2 : Discrete grid value function iteration 
+
+%pre-allocate matrices c, u for speed
+u = zeros(M,M,N);
+c = zeros(M,M,N);
+
+% one period return
+for i=1:M
+    for l=1:M %Think if kgrid(j) is correct or should maybe be kprime for the - kgrid(j)
+        for j=1:N %loop on value of z
+            c(i,l,j)= exp(Z_tauchen(j))*kgrid(i)^alpha - kgrid(l) + (1-delta)*kgrid(i);
+            if c(i,l,j)>0
+                u(i,l,j)=(c(i,l,j)^(1-gamma_c) -1)/(1-gamma_c);
+            else
+                %But I think the above should be correct, bc of same structure
+                %here
+                u(i,l,j)=-1e50*((exp(Z_tauchen(j))*kgrid(i)^alpha+(1-delta)*kgrid(i)-kgrid(l))<=0);
+                %we penalize the negative value of c by giving them an utility
+                %of minus infinity
+            end
+        end
+    end
 
 % 3. Log-linearization
 % =====================
@@ -122,6 +154,8 @@ if all(eigen > 1) || all(eigen < 1)
     BKcond = 0;
 end
 
+% initial guesses and preallocations
+dV=1;
 %If the Blanchard Kahn condition is satisfied, we can find the expression
 %of "alpha1"
 if BKcond~=1
@@ -132,6 +166,121 @@ else
     polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here : derived analytically 
 end
 
+%V= k_0^alpha - kgrid + (1-delta)*k_0;
+%V= (V.^(1-sigma) -1)/(1-sigma);
+% Alternative initial value definition
+V = zeros(M,N);
+VV = zeros(M,M,N);
+Vnew = zeros(M,N);
+kprime = zeros(M,N);
+%Vnewhow = zeros(M,N);
+index = zeros(M,N); %stores the index of the optimal policy kprime(kgrid(i))
+%kgrid(index(i))=kprime(i)
+iter=0;
+tic
+
+% main loop
+while dV>criter_V
+    iter=iter+1;
+    for i=1:M % loop over capital today
+        for j=1:N %... and over value of Z
+            for l=1:M %... and over capital tomorrow
+                VV(i,l,j)= u(i,l,j) + beta*V(l,j); %this is without the interpolatio
+            end
+             % take maximum over capital tomorrow
+            [Vnew(i,j), maxI]= max(VV(i,:,j));
+            index(i,j) = maxI;
+            % record policy function - doesnt make sense
+            kprime(i,j) = kgrid(maxI);
+        end
+    end
+    % Howard - doesn't help much here
+%     if Howard==1 && iter>3 
+%         dVV=1;
+%         while dVV>criter_V
+%         for i=1:M 
+%             temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
+%             temp = (temp^(1-gamma_c) -1)/(1-gamma_c);
+%             Vnewhow(i)=temp + beta*Vnew(index(i)); %Vnew(index(i))=V evaluated in kprime(i)
+%             clear temp
+%         end
+%         dVV=max(abs(Vnewhow-Vnew));
+%         Vnew=Vnewhow;
+%         disp("dVHoward");
+%         disp(dV);
+%          
+% 
+%         end
+%     end 
+    % calculate convergence criterion
+    % but basically, we stop if the old-new difference in values is small
+    dV=max(max(abs(Vnew-V))); 
+    % updated value function
+    V=Vnew;
+    disp('dV')
+    disp(dV)
+    iter=iter+1;
+end
+
+V_disc_VFI=V;
+kprime_VFI = kprime;
+toc
+
+% Build plots for policy functions - Plot policy function k'(k)
+hold on
+title("K' policy function plot")
+plot(kgrid, kprime), xlabel('Capital values at t'), ylabel('Capital level at t+1');
+h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448', ...
+    'Location', 'best','Orientation','Vertical');
+h.Title.String = 'log(z) values';
+set(h,'fontsize',12,'Interpreter','Latex')
+hold off
+
+%
+hold on
+title("Value function plot by capital values")
+plot(kgrid, V), xlabel('Capital values at t'), ylabel('Value function result at t');
+h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448', ...
+    'Location', 'best','Orientation','Vertical');
+h.Title.String = 'log(z) values';
+set(h,'fontsize',12,'Interpreter','Latex')
+hold off
+
+%% Euler equation errors in percent
+
+c1 = zeros(M,N);
+c2 = zeros(M,N);
+margprod = zeros(M,N);
+EEerror_disc = zeros(M,N);
+%maxEEerror_disc = 
+
+
+% consumption vector today
+for j=1:N
+    c1(:,j)=exp(Z_tauchen(j))*kgrid'.^alpha + (1- delta)*kgrid' - kprime(:,j);
+    % consumption vector at choice kprime tomorrow
+    c2(:,j)= interp1(exp(Z_tauchen(j))*kgrid', c1(:,j), kprime(:,j),'linear','extrap');
+    % marginal productivity
+    margprod(:,j)=alpha.*kprime(:,j).^(alpha-1) + 1 - delta;
+    EEerror_disc(:,j)=abs((c1(:,j) - beta.*margprod(:,j).^(-1/gamma_c).*c2(:,j))./c1(:,j));
+    %maxEEerror_disc(:,j)=max(abs(EEerror_disc(:,j)));
+end 
+
+%Graph of the EE error 
+
+hold on
+title("Euler equation error with corresponding values")
+plot(kgrid, EEerror_disc), xlabel('Capital values at t'), ylabel('Euler equation error');
+h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448', ...
+    'Location', 'best','Orientation','Vertical');
+h.Title.String = 'log(z) values';
+set(h,'fontsize',12,'Interpreter','Latex')
+hold off
+
+
+
+
+%% Problem SET 2
 
 
 
@@ -163,7 +312,7 @@ if delta==1 % only makes sense for delta=1
         coef(t)=temp/(1+temp);
         k_analyt_finite(t)=coef(t)*k_analyt_finite(t-1)^alpha;
     end
-    for i=1:N
+    for i=1:M
         kprime_analyt(i)=(alpha*beta)*kgrid(i)^alpha;
     end
 end
@@ -173,19 +322,19 @@ end
 % ==============
 
 %pre-allocate matrices c, u for speed
-u = zeros(N,N);
-c = zeros(N,N);
+u = zeros(M,M);
+c = zeros(M,M);
 
 % one period return
-for i=1:N
-    for j=1:N %Think if kgrid(j) is correct or should maybe be kprime for the - kgrid(j)
-        c(i,j)= kgrid(i)^alpha - kgrid(j) + (1-delta)*kgrid(i);
-        if c(i,j)>0
-            u(i,j)=(c(i,j)^(1-gamma_c) -1)/(1-gamma_c);
+for i=1:M
+    for l=1:M %Think if kgrid(j) is correct or should maybe be kprime for the - kgrid(j)
+        c(i,l)= kgrid(i)^alpha - kgrid(l) + (1-delta)*kgrid(i);
+        if c(i,l)>0
+            u(i,l)=(c(i,l)^(1-gamma_c) -1)/(1-gamma_c);
         else
             %But I think the above should be correct, bc of same structure
             %here
-            u(i,j)=-1e50*((kgrid(i)^alpha+(1-delta)*kgrid(i)-kgrid(j))<=0);
+            u(i,l)=-1e50*((kgrid(i)^alpha+(1-delta)*kgrid(i)-kgrid(l))<=0);
             %we penalize the negative value of c by giving them an utility
             %of minus infinity
         end
@@ -198,12 +347,12 @@ dV=1;
 %V= k_0^alpha - kgrid + (1-delta)*k_0;
 %V= (V.^(1-sigma) -1)/(1-sigma);
 % Alternative initial value definition
-V = zeros(1,N);
-VV = zeros(N,N);
-Vnew = zeros(1,N);
-kprime = zeros(1,N);
-Vnewhow = zeros(1,N);
-index = zeros(1,N); %stores the index of the optimal policy kprime(kgrid(i))
+V = zeros(1,M);
+VV = zeros(M,M);
+Vnew = zeros(1,M);
+kprime = zeros(1,M);
+Vnewhow = zeros(1,M);
+index = zeros(1,M); %stores the index of the optimal policy kprime(kgrid(i))
 %kgrid(index(i))=kprime(i)
 iter=0;
 tic
@@ -211,9 +360,9 @@ tic
 % main loop
 while dV>criter_V
     iter=iter+1;
-    for i=1:N % loop over capital today
-        for j=1:N %... and over capital tomorrow
-            VV(i,j)= u(i,j) + beta*V(j); %this is without the interpolation
+    for i=1:M % loop over capital today
+        for l=1:M %... and over capital tomorrow
+            VV(i,l)= u(i,l) + beta*V(l); %this is without the interpolation
         end
         % take maximum over capital tomorrow
         [Vnew(i), maxI]= max(VV(i,:));
@@ -225,7 +374,7 @@ while dV>criter_V
     if Howard==1 && iter>3 
         dVV=1;
         while dVV>criter_V
-        for i=1:N 
+        for i=1:M 
             temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
             temp = (temp^(1-gamma_c) -1)/(1-gamma_c);
             Vnewhow(i)=temp + beta*Vnew(index(i)); %Vnew(index(i))=V evaluated in kprime(i)
@@ -302,7 +451,7 @@ tic
 while dV>criter_V
     iter=iter+1;
     kprimelow=min(kgrid); kprimehigh=1.3*min(kgrid);
-    for i=1:N % loop over capital today
+    for i=1:M % loop over capital today
         % find maximum over capital tomorrow - now using interpolation
         [kprime_VFI_cont(i),Vnew(i)]=fminsearch(@(x) Valuefun(x,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta),kprime_VFI_cont(i),options);
     end
@@ -320,8 +469,8 @@ t_fmins=toc;
 dV=1;
 ctemp=kgrid.^alpha+(1-delta)*kgrid;
 V=V_disc_VFI;%(ctemp.^(1-sigma)-1)/(1-sigma)
-kprime_VFI_contG = zeros(1,N);
-VnewG = zeros(1,N);
+kprime_VFI_contG = zeros(1,M);
+VnewG = zeros(1,M);
 iter=0;        
 alpha1 = (3-sqrt(5))/2;
 alpha2 = (sqrt(5)-1)/2;
@@ -329,7 +478,7 @@ tic
 while dV>criter_V
     iter=iter+1;
 
-    for i=1:N % loop over capital today
+    for i=1:M % loop over capital today
         
         if i==1
             kprimelow=min(kgrid); 
