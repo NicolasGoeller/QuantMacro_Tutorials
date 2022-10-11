@@ -137,11 +137,11 @@ while dV>criter_V
             for l=1:M %... and over capital tomorrow
                 VV(i,l,j)= u(i,l,j) + beta*V(l,j); %this is without the interpolatio
             end
-        % take maximum over capital tomorrow
-        [Vnew(i,j), maxI]= max(VV(i,:,j));
-        index(i,j) = maxI;
-        % record policy function - doesnt make sense
-        kprime(i,j) = kgrid(maxI);
+             % take maximum over capital tomorrow
+            [Vnew(i,j), maxI]= max(VV(i,:,j));
+            index(i,j) = maxI;
+            % record policy function - doesnt make sense
+            kprime(i,j) = kgrid(maxI);
         end
     end
     % Howard - doesn't help much here
