@@ -180,28 +180,46 @@ toc
 hold on
 title("K' policy function plot")
 plot(kgrid, kprime), xlabel('Capital values at t'), ylabel('Capital level at t+1');
+h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448');
+h.Title.String = 'log(z) values';
+set(h,'fontsize',12,'Interpreter','Latex')
 hold off
+
 %
 hold on
 title("Value function plot by capital values")
 plot(kgrid, V), xlabel('Capital values at t'), ylabel('Value function result at t');
+h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448');
+h.Title.String = 'log(z) values';
+set(h,'fontsize',12,'Interpreter','Latex')
 hold off
 
-% Euler equation errors in percent
+%% Euler equation errors in percent
+
+c1 = zeros(M,N);
+c2 = zeros(M,N);
+margprod = zeros(M,N);
+EEerror_disc = zeros(M,N);
+%maxEEerror_disc = 
+
 
 % consumption vector today
-c1= kgrid.^alpha + (1- delta)*kgrid - kprime;
-% consumption vector at choice kprime tomorrow
-c2= interp1(kgrid, c1, kprime,'linear','extrap');
-% marginal productivity
-margprod=alpha.*kprime.^(alpha-1) + 1 - delta;
-
-EEerror_disc=(c1 - beta.*margprod.^(-1/gamma_c).*c2)./c1;
-maxEEerror_disc=max(abs(EEerror_disc));
+for j=1:N
+    c1(:,j)=exp(Z_tauchen(j))*kgrid'.^alpha + (1- delta)*kgrid' - kprime(:,j);
+    % consumption vector at choice kprime tomorrow
+    c2(:,j)= interp1(exp(Z_tauchen(j))*kgrid', c1(:,j), kprime(:,j),'linear','extrap');
+    % marginal productivity
+    margprod(:,j)=alpha.*kprime(:,j).^(alpha-1) + 1 - delta;
+    EEerror_disc(:,j)=abs((c1(:,j) - beta.*margprod(:,j).^(-1/gamma_c).*c2(:,j))./c1(:,j));
+    %maxEEerror_disc(:,j)=max(abs(EEerror_disc(:,j)));
+end 
 
 hold on
 title("Euler equation error with corresponding values")
 plot(kgrid, EEerror_disc), xlabel('Capital values at t'), ylabel('Euler equation error');
+h = legend('log(z)=-0.0448','log(z)=-0.0224','log(z)=0','log(z)=0.0224','log(z)=0.0448');
+h.Title.String = 'log(z) values';
+set(h,'fontsize',12,'Interpreter','Latex')
 hold off
 
 
