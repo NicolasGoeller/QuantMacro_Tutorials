@@ -21,8 +21,9 @@ rho = 0.95;   % persistence of TFP shock
 gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=0.1;
 sigma = 0.007;
+seed()
 
-
+v = sigma/(sqrt(1-rho^2));
 % ============
 % options and convergence criteria
 % ============
@@ -32,7 +33,7 @@ criter_V = 1e-6; % conv criterion for value function
 M=50; % number of grid points
 N=5; % grid for z
 linear=1; % grid linear or not
-N_sim = 100; % nbr of simulation
+N_sim = 1000; % nbr of simulation
 N=5;
 T = 150;%period of transition
 %mean of capital non-stochastic steady state
@@ -120,7 +121,7 @@ for i=1:M
             end
         end
     end
-
+end
 
 
 %V= k_0^alpha - kgrid + (1-delta)*k_0;
