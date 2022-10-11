@@ -65,7 +65,7 @@ else
 end
 
 
-% Problem 1 - discretize income process and simulate
+%% Problem 1 - discretize income process and simulate
 % ==============
 
 [Z_tauchen, P_tauchen] = tauchen(N,0,rho,sigma,2);
@@ -121,50 +121,7 @@ for i=1:M
         end
     end
 
-% 3. Log-linearization
-% =====================
 
-% some ratios as function of parameters
-ybar=kbar^alpha;
-cbar=ybar-delta*kbar;
-% need for matrix form of loglin
-ckrat=cbar/kbar;
-
-% a. write system as A E[y_t+1]+B y_t=0
-
-
-
-% order c,k,z
-A=[-gamma_c, beta *(alpha-1)*alpha*kbar^(alpha-1) ; 0 , 1 ];
-
-B= [-sigma , 0 ; -ckrat,(1/beta)];
-
-D = inv(A)*B;
-
-% note that these are right-hand eigenvectors
-[ ev lambda]=eig(D); %%%give the egein vectors and eigen values of D
-aaa=inv(ev); %%% give the invert of the eigen vector matrix
-
-% find eigenvalues equal or larger than one, and check that they equal the
-% number of jump variables - in that case, set BKcond to 1
-
-BKcond = 1;
-eigen = [lambda(1,1) lambda(2,2)];
-if all(eigen > 1) || all(eigen < 1)
-    BKcond = 0;
-end
-
-% initial guesses and preallocations
-dV=1;
-%If the Blanchard Kahn condition is satisfied, we can find the expression
-%of "alpha1"
-if BKcond~=1
-    disp('BK conditions not satisfied')
-else
-    bkev =find(abs(diag(lambda))>1);
-    invP=aaa(bkev,:);%%Select the element of the invert of the vector matrix needed to compute the policy function
-    polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here : derived analytically 
-end
 
 %V= k_0^alpha - kgrid + (1-delta)*k_0;
 %V= (V.^(1-sigma) -1)/(1-sigma);
@@ -277,6 +234,50 @@ h.Title.String = 'log(z) values';
 set(h,'fontsize',12,'Interpreter','Latex')
 hold off
 
+%% 3. Log-linearization
+% =====================
+
+% some ratios as function of parameters
+ybar=kbar^alpha;
+cbar=ybar-delta*kbar;
+% need for matrix form of loglin
+ckrat=cbar/kbar;
+
+% a. write system as A E[y_t+1]+B y_t=0
+
+
+
+% order c,k,z
+A=[-gamma_c, beta *(alpha-1)*alpha*kbar^(alpha-1) ; 0 , 1 ];
+
+B= [-sigma , 0 ; -ckrat,(1/beta)];
+
+D = inv(A)*B;
+
+% note that these are right-hand eigenvectors
+[ ev lambda]=eig(D); %%%give the egein vectors and eigen values of D
+aaa=inv(ev); %%% give the invert of the eigen vector matrix
+
+% find eigenvalues equal or larger than one, and check that they equal the
+% number of jump variables - in that case, set BKcond to 1
+
+BKcond = 1;
+eigen = [lambda(1,1) lambda(2,2)];
+if all(eigen > 1) || all(eigen < 1)
+    BKcond = 0;
+end
+
+% initial guesses and preallocations
+dV=1;
+%If the Blanchard Kahn condition is satisfied, we can find the expression
+%of "alpha1"
+if BKcond~=1
+    disp('BK conditions not satisfied')
+else
+    bkev =find(abs(diag(lambda))>1);
+    invP=aaa(bkev,:);%%Select the element of the invert of the vector matrix needed to compute the policy function
+    polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here : derived analytically 
+end
 
 
 
