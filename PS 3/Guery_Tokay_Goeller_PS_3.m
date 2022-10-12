@@ -214,7 +214,7 @@ for i=1:N_sim
     for t=1:T
         clin(t,i) = (polfunc_1*((klin(1,i)-kbar)/kbar) + polfunc_2*(exp(Xval(t,i)) - 1))*cbar + cbar; 
         klin(t+1,i) = exp(Xval(t,i))*klin(t,i)^alpha + (1-delta)*klin(t,i) - clin(t,i);
-        ilin(t+1,i) = klin(t+1,i) -(1-delta)*klin(t,i);
+        ilin(t,i) = klin(t+1,i) -(1-delta)*klin(t,i);
 
     end
 end
@@ -263,214 +263,51 @@ set(h,'fontsize',12,'Interpreter','Latex');
 
 % Calculate avg std dev over simulations
 
-%% Problem SET 2
+%% Problem SET BONUS
+
+% Simulate new paths of Z with starting point at sigma
+
+[Z_tauchen, P_tauchen] = tauchen(N,0,rho,sigma,2);
+p = dtmc(P_tauchen);
+X0 = [0 0 0 N_sim 0]; %simulate N_sim starting at initial value of log z = 1std
+X = simulate(p,T,"X0",X0); %X0 define the number of simulation to be made starting with a given initial condition
+
+% Create separate matrix for Markov values (tauchen) and for simulation results
+Xval = ones(T+1, N_sim);
+for i=1:N 
+      Xval(X==i)=Z_tauchen(i,1);
+end
 
 
 % a. analytical policies, finite and infinite horizon
 
 delta=1;
+gamma_c=1.00000001;
+kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1));
+k_0 = kbar;
+
 
 if delta==1 % only makes sense for delta=1
-    k_analyt=zeros(1,T);
+    k_analyt=zeros(T,N_sim);
     k_analyt(1)=k_0;
     k_analyt_finite(1)=k_0;
-    for t=2:T
-        k_analyt(t)=(alpha*beta)*k_analyt(t-1)^alpha;
-        temp=0;
-        if t<T
-            for i=t:T-1
-                temp=alpha*beta*(1+temp);
+    for j=1:N_sim
+        k_analyt(1,j)=k_0;
+        k_analyt_finite(1,j)=k_0;
+        for t=2:T+1
+            k_analyt(t,j)=exp(Xval(t-1,j))*(alpha*beta)*k_analyt(t-1,j)^alpha;
+            temp=0;
+            if t<T
+                for i=t:T-1
+                    temp=alpha*beta*(1+temp);
+                end
             end
+            coef(t)=temp/(1+temp);
+            k_analyt_finite(t,j)=exp(Xval(t-1,j))*coef(t)*k_analyt_finite(t-1,j)^alpha;
         end
-        coef(t)=temp/(1+temp);
-        k_analyt_finite(t)=coef(t)*k_analyt_finite(t-1)^alpha;
-    end
-    for i=1:M
-        kprime_analyt(i)=(alpha*beta)*kgrid(i)^alpha;
     end
 end
 
 
-%% Build plots for policy functions - Plot policy function k'(k)
-hold on
-title("K' policy function plot")
-plot(kgrid, kprime), xlabel('Capital values at t'), ylabel('Capital level at t+1');
-hold off
-%%
-hold on
-title("Value function plot by capital values")
-plot(kgrid, V), xlabel('Capital values at t'), ylabel('Value function result at t');
-hold off
-%%
-
-% Euler equation errors in percent
-
-% consumption vector today
-c1= kgrid.^alpha + (1- delta)*kgrid - kprime;
-% consumption vector at choice kprime tomorrow
-c2= interp1(kgrid, c1, kprime,'linear','extrap');
-% marginal productivity
-margprod=alpha.*kprime.^(alpha-1) + 1 - delta;
-
-EEerror_disc=(c1 - beta.*margprod.^(-1/gamma_c).*c2)./c1;
-maxEEerror_disc=max(abs(EEerror_disc));
-
-hold on
-title("Euler equation error with corresponding values")
-plot(kgrid, EEerror_disc), xlabel('Capital values at t'), ylabel('Euler equation error');
-hold off
-%%
-% ==============
-% 3. Value function iteration with interpolation
-% ==============
-% set options for fminsearch
-options=optimset('MaxIter',5000,'MaxFunEval',5000,'TolFun',1e-12);
-% initial guesses
-
-dV=1;
-V=V_disc_VFI;%zeros(N,1);
-iter=0;
-tic
-kprime_VFI_cont=kprime_VFI; %initial guess
-
-
-tic
-
-% fminsearch
-while dV>criter_V
-    iter=iter+1;
-    kprimelow=min(kgrid); kprimehigh=1.3*min(kgrid);
-    for i=1:M % loop over capital today
-        % find maximum over capital tomorrow - now using interpolation
-        [kprime_VFI_cont(i),Vnew(i)]=fminsearch(@(x) Valuefun(x,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta),kprime_VFI_cont(i),options);
-    end
-    Vnew=-Vnew; % take negative as Valuefun is for minimisation
-    % calculate convergence criterion
-    dV=max(max(abs(Vnew-V)));
-    % updated value function
-    V=Vnew;
-    %disp('dV')
-    %disp(dV)
-end
-t_fmins=toc;
-%%
-% with Golden Search
-dV=1;
-ctemp=kgrid.^alpha+(1-delta)*kgrid;
-V=V_disc_VFI;%(ctemp.^(1-sigma)-1)/(1-sigma)
-kprime_VFI_contG = zeros(1,M);
-VnewG = zeros(1,M);
-iter=0;        
-alpha1 = (3-sqrt(5))/2;
-alpha2 = (sqrt(5)-1)/2;
-tic
-while dV>criter_V
-    iter=iter+1;
-
-    for i=1:M % loop over capital today
-        
-        if i==1
-            kprimelow=min(kgrid); 
-            kprimehigh=max(kgrid);
-        else
-            kprimelow=max(kprimelow,min(kgrid)); 
-            kprimehigh=1.2*kprimelow;
-        end
-        b1=kprimelow+alpha1*(kprimehigh-kprimelow); %lower bound candidate
-        b2=kprimelow+alpha2*(kprimehigh-kprimelow); %upper bound candidate
-        %Starting value function results
-        Vlow=Valuefunpos(kprimelow,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
-        Vhigh=Valuefunpos(kprimehigh,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
-        %Candidate value function results
-        % Lower bound cand result
-        Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
-        % Upper bound cand result
-        Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
-        dk=1;
-        criter_k=1e-12;
-        while dk>criter_k
-        % use golden search
-        if Vb2>Vb1                                            
-            kprimelow=b1; 
-            Vlow=Valuefunpos(kprimelow,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
-
-            b1=kprimelow+alpha1*(kprimehigh-kprimelow);
-            Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
-
-            b2=kprimelow+alpha2*(kprimehigh-kprimelow);
-            Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
-        else
-            kprimehigh=b2;
-            Vhigh=Valuefunpos(kprimehigh,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
-
-            b2=kprimelow+alpha2*(kprimehigh-kprimelow);
-            Vb2=Valuefunpos(b2,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
-
-            b1=kprimelow+alpha1*(kprimehigh-kprimelow);
-            Vb1=Valuefunpos(b1,kgrid,kgrid(i),alpha,gamma_c,V,delta,beta);
-        end
-        dk=abs(Vhigh-Vlow);
-        end
-        kprime_VFI_contG(i)=1/2*(kprimelow+kprimehigh);
-        VnewG(i)=1/2*(Vlow+Vhigh);
-
-        % disp([Vnew(i,1),kprime_VFI_cont(i)])
-    end
-    
-    % calculate convergence criterion
-    dV=max(max(abs(VnewG-V)));
-    % updated value function
-    V=VnewG;    
-    disp('dV')
-    disp(dV)
-end
-t_G=toc;
-
-%%
-
-% Euler equation errors in percent
-
-% consumption vector today
-c1_cont= kgrid.^alpha + (1- delta)*kgrid - kprime_VFI_contG;
-% consumption vector at choice kprime tomorrow
-c2_cont= interp1(kgrid, c1_cont, kprime_VFI_contG,'linear','extrap');
-% marginal productivity
-margprod_cont=alpha.*kprime_VFI_contG.^(alpha-1) + 1 - delta;
-
-EEerror_cont=(c1_cont - beta.*margprod_cont.^(-1/gamma_c).*c2_cont)./c1_cont;
-maxEEerror_cont=max(abs(EEerror_cont));
-
-hold on
-title("Euler equation error with corresponding values - Golden Search")
-plot(kgrid, EEerror_cont), xlabel('Capital values at t'), ylabel('Euler equation error');
-hold off
-
-%%
-% ==============
-% Figures
-% ==============
-% plot policy function
-figure(1)
-% levels
-subplot(2,1,1)
-title("K' policy function plot with Golden Search");
-hold on
-if delta==1 && abs(gamma_c-1)<0.001
-    kprime_analyt_pol=alpha*beta*kgrid.^alpha;
-    plot(kgrid,kprime_analyt_pol,'b-','Linewidth',1)
-end
-
-%plot(kgrid,kprime_VFI,'k-','Linewidth',1)
-%plot(kgrid,kprime_VFI_cont,'k--','Linewidth',1)
-%plot(kgrid,kprime_VFI_contG,'k--','Linewidth',1)
-plot(kgrid, kprime_VFI, kgrid, kprime_VFI_contG)
-xlabel('Capital values at t'), ylabel('Capital values at t+1');
-
-h = legend('VFI path', 'Golden Search path' ,'Location', 'best','Orientation','Vertical');
-h.Title.String = 'Search methods';
-
-set(h,'fontsize',12,'Interpreter','Latex')
-
-%%
 
 
