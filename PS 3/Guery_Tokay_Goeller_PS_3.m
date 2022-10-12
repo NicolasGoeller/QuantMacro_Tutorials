@@ -216,7 +216,7 @@ par.rho = 0.95;   % persistence of TFP shock
 par.gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 par.delta=0.1;
 par.sigma = 0.007;
-par.k0 = ((1/par.beta-1+par.delta)/(par.alpha))^(1/(par.alpha-1)); %kbar
+par.k0 = kgrid(M/2);%((1/par.beta-1+par.delta)/(par.alpha))^(1/(par.alpha-1)); %kbar
 par.linear = 1; %this is not relevant unless par.delta=1
 criter_v = 1e-6;
 
