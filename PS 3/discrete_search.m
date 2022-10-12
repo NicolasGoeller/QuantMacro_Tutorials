@@ -1,5 +1,11 @@
 function [V,kprime,index] = discrete_search(alpha, delta, gamma_c, beta, criter_V, M,N,Z_tauchen,kgrid)
 
+%This function return the grid of optimal value of the value function, of
+%kprime given k and z
+
+%index is the matrix of index of kprime in kgrid defined as follows kgrid(index(i,j))=kprime(i,j)
+
+
 %M is the size of the grid for value of z
 %N is the size of the grid for value of k
 %Z_tauchen is the grid of value of z
