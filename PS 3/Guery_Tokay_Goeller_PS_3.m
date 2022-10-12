@@ -276,10 +276,15 @@ if BKcond~=1
 else
     bkev =find(abs(diag(lambda))>1);
     invP=aaa(bkev,:);%%Select the element of the invert of the vector matrix needed to compute the policy function
-    polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here : derived analytically 
+    polfunc_1= -invP(1,2)/invP(1,1);% you need to find the policy for consumption here depending on k_t : derived analytically 
+    polfunc_2 = -invP(1,3)/invP(1,1);% Same thing but now applied for finding \theta_2
 end
 
-
+k_lin(1)=k_0;
+for t=2:T
+    c_lin(t-1)=polfunc*((k_lin(t-1)-kbar)/kbar)*cbar + cbar;
+    k_lin(t)=k_lin(t-1)^alpha +(1-delta)*k_lin(t-1) - c_lin(t-1);
+end
 
 %% Problem SET 2
 
