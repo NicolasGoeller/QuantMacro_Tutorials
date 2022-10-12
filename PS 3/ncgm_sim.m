@@ -54,7 +54,6 @@ end
 % Generate kprime matrix
 [V, kprime, index] = discrete_search(par.alpha,par.delta,par.gamma_c,par.beta, ...
     criter_V,M,N,Z_tauchen,kgrid);
-size(kprime)
 
 % Set first value in kpath of all simulations to k0
 kpath(1,:) = par.k0;

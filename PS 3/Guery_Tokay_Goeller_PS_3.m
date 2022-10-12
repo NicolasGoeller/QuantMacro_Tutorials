@@ -207,6 +207,7 @@ end
 klin = zeros(T+1,N_sim);
 clin  = zeros(T+1,N_sim);
 ilin = zeros (T+1,N_sim);
+olin = zeros(T+1,N_sim);
 
 
 for i=1:N_sim
@@ -215,6 +216,7 @@ for i=1:N_sim
         clin(t,i) = (polfunc_1*((klin(1,i)-kbar)/kbar) + polfunc_2*(exp(Xval(t,i)) - 1))*cbar + cbar; 
         klin(t+1,i) = exp(Xval(t,i))*klin(t,i)^alpha + (1-delta)*klin(t,i) - clin(t,i);
         ilin(t,i) = klin(t+1,i) -(1-delta)*klin(t,i);
+        olin(t,i) = exp(Xval(t,i))*klin(t,i).^alpha;
 
     end
 end
@@ -240,6 +242,7 @@ criter_v = 1e-6;
 
 [kpath_ana, cpath_ana, zpath] = ncgm_sim(T,M,N,n_sim,par, criter_V);
 ipath_ana = kpath_ana(2:end,:) - (1- par.delta)*kpath_ana(1:T,:);
+opath_ana = exp(zpath) .* kpath_ana(1:T,:).^par.alpha;
 
 %%
 x = 1:1:T;
@@ -260,6 +263,46 @@ h.Title.String = 'Solution methods';
 set(h,'fontsize',12,'Interpreter','Latex');
 
 % Calculate avg std dev over simulations
+%%
+% avg std dev capital
+sd_kana = std(kpath_ana);
+avgsd_kana = mean(sd_kana);
+
+sd_klin = std(klin);
+avgsd_klin = mean(sd_klin);
+
+disp("Average Std. Dev capital: Analytical - log-linear")
+disp([avgsd_kana, avgsd_klin])
+
+% avg std dev consumption
+sd_cana = std(cpath_ana);
+avgsd_cana = mean(sd_cana);
+
+sd_clin = std(clin(1:T,:));
+avgsd_clin = mean(sd_clin);
+
+disp("Average Std. Dev consumption: Analytical - log-linear")
+disp([avgsd_cana, avgsd_clin])
+
+% avg std dev investment
+sd_iana = std(ipath_ana);
+avgsd_iana = mean(sd_iana);
+
+sd_ilin = std(ilin(1:T,:));
+avgsd_ilin = mean(sd_ilin);
+
+disp("Average Std. Dev investment: Analytical - log-linear")
+disp([avgsd_iana, avgsd_ilin])
+
+% avg std dev output
+sd_oana = std(opath_ana);
+avgsd_oana = mean(sd_oana);
+
+sd_olin = std(olin(1:T,:));
+avgsd_olin = mean(sd_olin);
+
+disp("Average Std. Dev output: Analytical - log-linear")
+disp([avgsd_oana, avgsd_olin])
 
 %% Problem SET 2
 
