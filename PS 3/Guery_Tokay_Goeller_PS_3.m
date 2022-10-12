@@ -17,7 +17,7 @@ close all
 % ============
 alpha=0.4; % capital share - this is alpha
 beta = 0.987; % discount factor
-rho = 0.95;   % persistence of TFP shock
+rho = 0.5;   % persistence of TFP shock
 gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=0.1;
 sigma = 0.007;
@@ -88,17 +88,17 @@ Std_X = std(Xval);
 b = mean(Std_X);
 
 % Check autocorr of process
-acf1 = zeros(N,1);
+acf1 = zeros(N_sim,1);
 for i=1:N_sim
-    [Acf_x,lag] = autocorr(Xval(:,i));
-    acf1(i) = Acf_x(2);
+    [Acf_x,lag] = autocorr(Xval(:,i)); %Acf_x is the vector of autocorrelation values for sim X
+    acf1(i) = Acf_x(2); % Acf_x(2) is the autocorrelation value for lag 1 for simulation i
 end
-c = mean(acf1);
+c = mean(acf1); %mean of autocorrelation values of each simulation, should be equal to 0.95
 
-graphplot(p,'ColorEdges',true);
+%graphplot(p,'ColorEdges',true);
 
-figure;
-simplot(p,X);
+%figure;
+%simplot(p,X);
 
 %% Problem 2 : Discrete grid value function iteration 
 
@@ -234,7 +234,7 @@ par.rho = 0.95;   % persistence of TFP shock
 par.gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 par.delta=0.1;
 par.sigma = 0.007;
-par.k0 = ((1/par.beta-1+par.delta)/(par.alpha))^(1/(par.alpha-1)); %kbar
+par.k0 = kgrid(M/2);%((1/par.beta-1+par.delta)/(par.alpha))^(1/(par.alpha-1)); %kbar
 par.linear = 1; %this is not relevant unless par.delta=1
 criter_v = 1e-6;
 
