@@ -255,7 +255,7 @@ B= [-gamma_c , 0 ,0; -ckrat,(1/beta), 1/(beta*alpha) + ((-1+ delta)/alpha); 0,0,
 D = inv(A)*B;
 
 % note that these are right-hand eigenvectors
-[ ev lambda]=eig(D); %%%give the egein vectors and eigen values of D
+[ev lambda]=eig(D); %%%give the egein vectors and eigen values of D
 aaa=inv(ev); %%% give the invert of the eigen vector matrix
 
 % find eigenvalues equal or larger than one, and check that they equal the
