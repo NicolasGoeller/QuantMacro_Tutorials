@@ -68,7 +68,7 @@ end
 %% Problem 1 - discretize income process and simulate
 % ==============
 %Set random seed
-rng(1);
+rng(123);
 
 [Z_tauchen, P_tauchen] = tauchen(N,0,rho,sigma,2);
 p = dtmc(P_tauchen);
@@ -87,9 +87,10 @@ b = mean(Std_X);
 
 acf1 = zeros(N,1);
 for i=1:N_sim
-    [Acf_x,lag] = autocorr(Xval(:,i));
+    [Acf_x,lag] = autocorr(X(:,i));
     acf1(i) = Acf_x(2);
 end
+c = mean(acf1);
 
 graphplot(p,'ColorEdges',true);
 
@@ -97,17 +98,6 @@ figure;
 simplot(p,X);
 A = zeros(1,length(Z_tauchen));
 A=A';
-
-
-% disp('Standard devations of Z discrete, continuous')
-% disp([mean(std(log(Z_sim)')),(sigmaepsilon^2/(1-rho^2))^0.5])
-% for i=1:N_sim
-%     rho_emp(i)=corr(log(Z_sim(i,1:end-1))',log(Z_sim(i,2:end))');
-% end
-% disp('Autocorrelation of Z discrete, continuous')
-% 
-% disp([mean(rho_emp),rho])
-
 
 %% Problem 2 : Discrete grid value function iteration 
 
@@ -255,8 +245,6 @@ cbar=ybar-delta*kbar;
 ckrat=cbar/kbar;
 
 % a. write system as A E[y_t+1]+B y_t=0
-
-
 
 % order c,k,z
 A=[-gamma_c, beta*(alpha-1)*((1/beta) - 1+delta), beta*((1/beta) - 1+ delta) ; 0 , 1 , 0 ; 0 ,0 , 1 ];
