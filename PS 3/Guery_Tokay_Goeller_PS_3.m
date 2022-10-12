@@ -213,7 +213,7 @@ for i=1:N_sim
     for t=1:T
         clin(t,i) = (polfunc_1*((klin(1,i)-kbar)/kbar) + polfunc_2*(exp(Xval(t,i)) - 1))*cbar + cbar; 
         klin(t+1,i) = exp(Xval(t,i))*klin(t,i)^alpha + (1-delta)*klin(t,i) - clin(t,i);
-        ilin(t+1,i) = klin(t+1,i) -(1-delta)*klin(t,i);
+        ilin(t,i) = klin(t+1,i) -(1-delta)*klin(t,i);
 
     end
 end
