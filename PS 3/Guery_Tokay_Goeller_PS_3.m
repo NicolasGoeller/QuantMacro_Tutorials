@@ -206,7 +206,7 @@ end
 
 klin = zeros(T+1,N_sim);
 clin  = zeros(T+1,N_sim);
-
+ilin = zeros (T+1,N_sim);
 
 
 for i=1:N_sim
@@ -214,7 +214,8 @@ for i=1:N_sim
     for t=1:T
         clin(t,i) = (polfunc_1*((klin(1,i)-kbar)/kbar) + polfunc_2*(exp(Xval(t,i)) - 1))*cbar + cbar; 
         klin(t+1,i) = exp(Xval(t,i))*klin(t,i)^alpha + (1-delta)*klin(t,i) - clin(t,i);
-        
+        ilin(t+1,i) = klin(t+1,i) -(1-delta)*klin(t,i);
+
     end
 end
 
@@ -240,9 +241,27 @@ criter_v = 1e-6;
 
 % get 100 simulation of analytical solution
 
-[kpath, cpath, zpath] = ncgm_sim(T,M,N,n_sim,par, criter_V);
+[kpath_ana, cpath_ana, zpath] = ncgm_sim(T,M,N,n_sim,par, criter_V);
+ipath_ana = kpath_ana(2:end,:) - (1- par.delta)*kpath_ana(1:T,:);
 
+x = 1:1:T;
+figure(2)
+title('Simulated deterministic transition - infinite time')
+subplot(2,1,1)
 
+hold on
+plot(x, kpath_ana(1:T,1)', x, kpath_lin(:,1)), xlabel('Time steps'), ylabel('Capital level');
+
+subplot(2,1,2);
+hold on
+plot(x, cpath_ana(:,1)', x, cpath_lin(:,1)), xlabel('Time steps'), ylabel('Consumption level');
+hold off
+
+h = legend(['Analytical solution', 'Log-linear method'] ,'Location', 'bestoutside','Orientation','Vertical');
+h.Title.String = 'Solution methods';
+set(h,'fontsize',12,'Interpreter','Latex');
+
+% Calculate avg std dev over simulations
 
 %% Problem SET 2
 
