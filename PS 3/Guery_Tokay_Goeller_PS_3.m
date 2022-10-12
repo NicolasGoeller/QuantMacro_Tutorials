@@ -95,18 +95,6 @@ graphplot(p,'ColorEdges',true);
 
 figure;
 simplot(p,X);
-A = zeros(1,length(Z_tauchen));
-A=A';
-
-
-% disp('Standard devations of Z discrete, continuous')
-% disp([mean(std(log(Z_sim)')),(sigmaepsilon^2/(1-rho^2))^0.5])
-% for i=1:N_sim
-%     rho_emp(i)=corr(log(Z_sim(i,1:end-1))',log(Z_sim(i,2:end))');
-% end
-% disp('Autocorrelation of Z discrete, continuous')
-% 
-% disp([mean(rho_emp),rho])
 
 
 %% Problem 2 : Discrete grid value function iteration 
