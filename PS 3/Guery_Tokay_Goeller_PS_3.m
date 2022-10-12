@@ -32,8 +32,7 @@ criter_V = 1e-6; % conv criterion for value function
 M=50; % number of grid points
 N=5; % grid for z
 linear=1; % grid linear or not
-N_sim = 1000; % nbr of simulation
-N=5;
+N_sim = 100; % nbr of simulation
 T = 150;%period of transition
 %mean of capital non-stochastic steady state
 kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1));
@@ -68,7 +67,7 @@ end
 %% Problem 1 - discretize income process and simulate
 % ==============
 %Set random seed
-rng(123);
+rng(4);
 
 [Z_tauchen, P_tauchen] = tauchen(N,0,rho,sigma,2);
 p = dtmc(P_tauchen);
@@ -80,14 +79,18 @@ Xval = ones(T+1, N_sim);
 for i=1:N 
       Xval(X==i)=Z_tauchen(i,1);
 end
+
+% Check mean of process
 Mean_X= mean(Xval,1);
 a = mean(Mean_X);
+% check std. dev of process
 Std_X = std(Xval);
 b = mean(Std_X);
 
+% Check autocorr of process
 acf1 = zeros(N,1);
 for i=1:N_sim
-    [Acf_x,lag] = autocorr(X(:,i));
+    [Acf_x,lag] = autocorr(Xval(:,i));
     acf1(i) = Acf_x(2);
 end
 c = mean(acf1);
@@ -96,8 +99,6 @@ graphplot(p,'ColorEdges',true);
 
 figure;
 simplot(p,X);
-A = zeros(1,length(Z_tauchen));
-A=A';
 
 %% Problem 2 : Discrete grid value function iteration 
 
