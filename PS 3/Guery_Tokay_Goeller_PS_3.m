@@ -18,7 +18,7 @@ close all
 alpha=0.4; % capital share - this is alpha
 beta = 0.987; % discount factor
 rho = 0.5;   % persistence of TFP shock
-gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
+gamma_c = 2; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=0.1;
 sigma = 0.007;
 
@@ -203,6 +203,7 @@ else
     polfunc_1= -invP(1,2)/invP(1); % you need to find the policy for consumption here : derived analytically 
     polfunc_2 = -invP(1,3)/invP(1);
 end
+
 klin = zeros(T+1,N_sim);
 clin  = zeros(T+1,N_sim);
 ilin = zeros (T+1,N_sim);
@@ -265,19 +266,9 @@ set(h,'fontsize',12,'Interpreter','Latex');
 %% Problem SET 2
 
 
-
-% ==============
-% 1. analytical case delta=1, finite T and infinite T
-% ==============
-
-alpha=0.4; % capital share - this is alpha
-beta = 0.99; % discount factor
-rho = 0.95;   % persistence of TFP shock
-gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
-delta=0.1;
-
 % a. analytical policies, finite and infinite horizon
 
+delta=1;
 
 if delta==1 % only makes sense for delta=1
     k_analyt=zeros(1,T);
