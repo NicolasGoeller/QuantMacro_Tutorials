@@ -279,6 +279,26 @@ else
     polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here : derived analytically 
 end
 
+%% Problem 4
+
+% Set parameters
+T = 100;
+M = 50;
+N = 5;
+n_sim = 100;
+par.alpha=0.4; % capital share - this is alpha
+par.beta = 0.987; % discount factor
+par.rho = 0.95;   % persistence of TFP shock
+par.gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
+par.delta=0.1;
+par.sigma = 0.007;
+par.k0 = ((1/par.beta-1+par.delta)/(par.alpha))^(1/(par.alpha-1)); %kbar
+par.linear = 1; %this is not relevant unless par.delta=1
+
+% get 100 simulation of analytical solution
+
+[kpath, cpath, zpath] = ncgm_sim(T,M,N,n_sim,par);
+
 
 
 %% Problem SET 2
