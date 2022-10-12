@@ -21,7 +21,6 @@ rho = 0.95;   % persistence of TFP shock
 gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=0.1;
 sigma = 0.007;
-%seed()
 
 v = sigma/(sqrt(1-rho^2));
 % ============
@@ -68,19 +67,30 @@ end
 
 %% Problem 1 - discretize income process and simulate
 % ==============
+%Set random seed
+rng(1);
 
 [Z_tauchen, P_tauchen] = tauchen(N,0,rho,sigma,2);
 p = dtmc(P_tauchen);
 X0 = [0 0 N_sim 0 0]; %simulate N_sim starting at initial value of Z=0 
 X = simulate(p,T,"X0",X0); %X0 define the number of simulation to be made starting with a given initial condition
+
+% Create separate matrix for Markov values (tauchen) and for simulation results
+Xval = ones(T+1, N_sim);
 for i=1:N 
-      X(X==i)=Z_tauchen(i,1);
+      Xval(X==i)=Z_tauchen(i,1);
 end
-Mean_X= mean(X,1);
+Mean_X= mean(Xval,1);
 a = mean(Mean_X);
-Std_X = std(X);
+Std_X = std(Xval);
 b = mean(Std_X);
-[Acf_x,lag] = autocorr(X(:,4));
+
+acf1 = zeros(N,1);
+for i=1:N_sim
+    [Acf_x,lag] = autocorr(Xval(:,i));
+    acf1(i) = Acf_x(2);
+end
+
 graphplot(p,'ColorEdges',true);
 
 figure;
