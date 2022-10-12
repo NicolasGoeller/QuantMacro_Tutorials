@@ -54,7 +54,6 @@ end
 % Generate kprime matrix
 [V, kprime, index] = discrete_search(par.alpha,par.delta,par.gamma_c,par.beta, ...
     criter_V,M,N,Z_tauchen,kgrid);
-size(kprime)
 
 % Set first value in kpath of all simulations to k0
 kpath(1,:) = par.k0;
@@ -63,14 +62,9 @@ kpath(1,:) = par.k0;
 for i = 1:n_sim
     % Run loop over number of time steps
     for t = 1:T
-        t
         % Get index of k in kgrid
-        kpath(t,i)
-        %kgrid
         k_index = find(kgrid == kpath(t,i));%index(kpath(t,i), zpath(t,i));
         % Get kprime optimal for current z and k
-        k_index
-        X(t,i)
         kpath(t+1,i) = kprime(k_index,X(t,i));
         % Compute optimal c for k, kprime and z
         cpath(t,i) = exp(zpath(t,i))*kpath(t,i)^par.alpha - kpath(t,i) + (1-par.delta)*kpath(t,i);
