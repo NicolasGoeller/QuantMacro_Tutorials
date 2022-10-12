@@ -95,6 +95,7 @@ graphplot(p,'ColorEdges',true);
 
 figure;
 simplot(p,X);
+mean(acf1)
 
 
 %% Problem 2 : Discrete grid value function iteration 
@@ -249,7 +250,7 @@ ckrat=cbar/kbar;
 % order c,k,z
 A=[-gamma_c, beta*(alpha-1)*((1/beta) - 1+delta), beta*((1/beta) - 1+ delta) ; 0 , 1 , 0 ; 0 ,0 , 1 ];
 
-B= [-gamma_c , 0 ,0; -ckrat,(1/beta), (1/(beta*alpha)) + ((-1+ delta)/alpha); 0,0,rho];
+B= [-gamma_c , 0 ,0; -ckrat,(1/beta), (1/(beta*alpha)) + (delta-1)/alpha ; 0,0,rho];
 
 D = inv(A)*B;
 
