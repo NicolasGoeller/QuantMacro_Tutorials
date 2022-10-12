@@ -200,8 +200,25 @@ if BKcond~=1
 else
     bkev =find(abs(diag(lambda))>1);
     invP=aaa(bkev,:);%%Select the element of the invert of the vector matrix needed to compute the policy function
-    polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here : derived analytically 
+    polfunc_1= -invP(1,2)/invP(1); % you need to find the policy for consumption here : derived analytically 
+    polfunc_2 = -invP(1,3)/invP(1);
 end
+klin = zeros(T+1,N_sim);
+clin  = zeros(T+1,N_sim);
+
+
+
+for i=1:N_sim
+    klin(1,i) = kbar;
+    for t=1:T
+        clin(t,i) = (polfunc_1*((klin(1,i)-kbar)/kbar) + polfunc_2*exp(Xval(t,i)) - 1)*cbar - cbar; 
+        klin(t+1,i) = exp(Xval(t,i))*klin(t,i)^alpha + (1-delta)*klin(t,i) - clin(t,i);
+        
+    end
+end
+
+
+
 
 %% Problem 4
 
@@ -216,12 +233,13 @@ par.rho = 0.95;   % persistence of TFP shock
 par.gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 par.delta=0.1;
 par.sigma = 0.007;
-par.k0 = ((1/par.beta-1+par.delta)/(par.alpha))^(1/(par.alpha-1)); %kbar
+par.k0 = kgrid(M/2);%((1/par.beta-1+par.delta)/(par.alpha))^(1/(par.alpha-1)); %kbar
 par.linear = 1; %this is not relevant unless par.delta=1
+criter_v = 1e-6;
 
 % get 100 simulation of analytical solution
 
-[kpath, cpath, zpath] = ncgm_sim(T,M,N,n_sim,par);
+[kpath, cpath, zpath] = ncgm_sim(T,M,N,n_sim,par, criter_V);
 
 
 

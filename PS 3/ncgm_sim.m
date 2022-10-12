@@ -1,4 +1,4 @@
-function [kpath, cpath, zpath] = ncgm_sim(T, M, N, n_sim, par)
+function [kpath, cpath, zpath] = ncgm_sim(T, M, N, n_sim, par, criter_V)
 %Function ncgm_sim
 %
 %Purpose:    Run a discretized, stochastic NCGM for the indicated
@@ -21,7 +21,6 @@ function [kpath, cpath, zpath] = ncgm_sim(T, M, N, n_sim, par)
 kpath = zeros(T+1,n_sim);
 cpath = zeros(T,n_sim);
 zpath = zeros(T,n_sim);
-%kgrid = zeros(1,M);
 
 % Generate kgrid
 kbar=((1/par.beta-1+par.delta)/(par.alpha))^(1/(par.alpha-1));
@@ -46,27 +45,35 @@ end
 rng(4);
 [Z_tauchen, P_tauchen] = tauchen(N,0,par.rho,par.sigma,2);
 p = dtmc(P_tauchen);
-X0 = [0 0 N_sim 0 0]; %simulate N_sim starting at initial value of Z=0 
-X = simulate(p,T,"X0",X0); %X0 define the number of simulation to be made starting with a given initial condition
+X0 = [0 0 n_sim 0 0]; %simulate N_sim starting at initial value of Z=0 
+X = simulate(p,T-1,"X0",X0); %X0 define the number of simulation to be made starting with a given initial condition
 for i=1:N 
       zpath(X==i)=Z_tauchen(i,1);
 end
 
 % Generate kprime matrix
-[V, kprime, index] = discrete_search();
+[V, kprime, index] = discrete_search(par.alpha,par.delta,par.gamma_c,par.beta, ...
+    criter_V,M,N,Z_tauchen,kgrid);
+size(kprime)
 
+% Set first value in kpath of all simulations to k0
 kpath(1,:) = par.k0;
 
+% Run loop over number of simulations
 for i = 1:n_sim
-    
+    % Run loop over number of time steps
     for t = 1:T
+        t
         % Get index of k in kgrid
-        index = find(kgrid == k);
-        % Get kprime optimal for cuurent z and k
-        kpath(t+1,i) = kprime(index,zpath(t,i));
+        kpath(t,i)
+        %kgrid
+        k_index = find(kgrid == kpath(t,i));%index(kpath(t,i), zpath(t,i));
+        % Get kprime optimal for current z and k
+        k_index
+        X(t,i)
+        kpath(t+1,i) = kprime(k_index,X(t,i));
         % Compute optimal c for k, kprime and z
         cpath(t,i) = exp(zpath(t,i))*kpath(t,i)^par.alpha - kpath(t,i) + (1-par.delta)*kpath(t,i);
-        k = kpath(t,i);
     end
 end
 
