@@ -32,8 +32,7 @@ criter_V = 1e-6; % conv criterion for value function
 M=50; % number of grid points
 N=5; % grid for z
 linear=1; % grid linear or not
-N_sim = 1000; % nbr of simulation
-N=5;
+N_sim = 100; % nbr of simulation
 T = 150;%period of transition
 %mean of capital non-stochastic steady state
 kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1));
@@ -68,7 +67,7 @@ end
 %% Problem 1 - discretize income process and simulate
 % ==============
 %Set random seed
-rng(1);
+rng(4);
 
 [Z_tauchen, P_tauchen] = tauchen(N,0,rho,sigma,2);
 p = dtmc(P_tauchen);
@@ -80,108 +79,35 @@ Xval = ones(T+1, N_sim);
 for i=1:N 
       Xval(X==i)=Z_tauchen(i,1);
 end
+
+% Check mean of process
 Mean_X= mean(Xval,1);
 a = mean(Mean_X);
+% check std. dev of process
 Std_X = std(Xval);
 b = mean(Std_X);
 
+% Check autocorr of process
 acf1 = zeros(N,1);
 for i=1:N_sim
     [Acf_x,lag] = autocorr(Xval(:,i));
     acf1(i) = Acf_x(2);
 end
+c = mean(acf1);
 
 graphplot(p,'ColorEdges',true);
 
 figure;
 simplot(p,X);
-mean(acf1)
-
 
 %% Problem 2 : Discrete grid value function iteration 
 
-%pre-allocate matrices c, u for speed
-u = zeros(M,M,N);
-c = zeros(M,M,N);
 
-% one period return
-for i=1:M
-    for l=1:M %Think if kgrid(j) is correct or should maybe be kprime for the - kgrid(j)
-        for j=1:N %loop on value of z
-            c(i,l,j)= exp(Z_tauchen(j))*kgrid(i)^alpha - kgrid(l) + (1-delta)*kgrid(i);
-            if c(i,l,j)>0
-                u(i,l,j)=(c(i,l,j)^(1-gamma_c) -1)/(1-gamma_c);
-            else
-                %But I think the above should be correct, bc of same structure
-                %here
-                u(i,l,j)=-1e50*((exp(Z_tauchen(j))*kgrid(i)^alpha+(1-delta)*kgrid(i)-kgrid(l))<=0);
-                %we penalize the negative value of c by giving them an utility
-                %of minus infinity
-            end
-        end
-    end
-end
-
-
-%V= k_0^alpha - kgrid + (1-delta)*k_0;
-%V= (V.^(1-sigma) -1)/(1-sigma);
-% Alternative initial value definition
-V = zeros(M,N);
-VV = zeros(M,M,N);
-Vnew = zeros(M,N);
-kprime = zeros(M,N);
-%Vnewhow = zeros(M,N);
-index = zeros(M,N); %stores the index of the optimal policy kprime(kgrid(i))
-%kgrid(index(i))=kprime(i)
-iter=0;
-tic
-
-% main loop
-while dV>criter_V
-    iter=iter+1;
-    for i=1:M % loop over capital today
-        for j=1:N %... and over value of Z
-            for l=1:M %... and over capital tomorrow
-                VV(i,l,j)= u(i,l,j) + beta*V(l,j); %this is without the interpolatio
-            end
-             % take maximum over capital tomorrow
-            [Vnew(i,j), maxI]= max(VV(i,:,j));
-            index(i,j) = maxI;
-            % record policy function - doesnt make sense
-            kprime(i,j) = kgrid(maxI);
-        end
-    end
-    % Howard - doesn't help much here
-%     if Howard==1 && iter>3 
-%         dVV=1;
-%         while dVV>criter_V
-%         for i=1:M 
-%             temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
-%             temp = (temp^(1-gamma_c) -1)/(1-gamma_c);
-%             Vnewhow(i)=temp + beta*Vnew(index(i)); %Vnew(index(i))=V evaluated in kprime(i)
-%             clear temp
-%         end
-%         dVV=max(abs(Vnewhow-Vnew));
-%         Vnew=Vnewhow;
-%         disp("dVHoward");
-%         disp(dV);
-%          
-% 
-%         end
-%     end 
-    % calculate convergence criterion
-    % but basically, we stop if the old-new difference in values is small
-    dV=max(max(abs(Vnew-V))); 
-    % updated value function
-    V=Vnew;
-    disp('dV')
-    disp(dV)
-    iter=iter+1;
-end
-
+[V,kprime,index]=discrete_search(alpha,delta,gamma_c,beta,criter_V,M,N,Z_tauchen,kgrid);
 V_disc_VFI=V;
 kprime_VFI = kprime;
-toc
+
+%%
 
 % Build plots for policy functions - Plot policy function k'(k)
 hold on
@@ -245,12 +171,10 @@ ckrat=cbar/kbar;
 
 % a. write system as A E[y_t+1]+B y_t=0
 
-
-
 % order c,k,z
 A=[-gamma_c, beta*(alpha-1)*((1/beta) - 1+delta), beta*((1/beta) - 1+ delta) ; 0 , 1 , 0 ; 0 ,0 , 1 ];
 
-B= [-gamma_c , 0 ,0; -ckrat,(1/beta), (1/(beta*alpha)) + (delta-1)/alpha ; 0,0,rho];
+B= [-gamma_c , 0 ,0; -ckrat,(1/beta), 1/(beta*alpha) + ((-1+ delta)/alpha); 0,0,rho];
 
 D = inv(A)*B;
 
@@ -276,15 +200,31 @@ if BKcond~=1
 else
     bkev =find(abs(diag(lambda))>1);
     invP=aaa(bkev,:);%%Select the element of the invert of the vector matrix needed to compute the policy function
-    polfunc_1= -invP(1,2)/invP(1,1);% you need to find the policy for consumption here depending on k_t : derived analytically 
-    polfunc_2 = -invP(1,3)/invP(1,1);% Same thing but now applied for finding \theta_2
+    polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here : derived analytically 
 end
 
-k_lin(1)=k_0;
-for t=2:T
-    c_lin(t-1)=polfunc*((k_lin(t-1)-kbar)/kbar)*cbar + cbar;
-    k_lin(t)=k_lin(t-1)^alpha +(1-delta)*k_lin(t-1) - c_lin(t-1);
-end
+%% Problem 4
+
+% Set parameters
+T = 100;
+M = 50;
+N = 5;
+n_sim = 100;
+par.alpha=0.4; % capital share - this is alpha
+par.beta = 0.987; % discount factor
+par.rho = 0.95;   % persistence of TFP shock
+par.gamma_c = 2.00000001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
+par.delta=0.1;
+par.sigma = 0.007;
+par.k0 = ((1/par.beta-1+par.delta)/(par.alpha))^(1/(par.alpha-1)); %kbar
+par.linear = 1; %this is not relevant unless par.delta=1
+criter_v = 1e-6;
+
+% get 100 simulation of analytical solution
+
+[kpath, cpath, zpath] = ncgm_sim(T,M,N,n_sim,par, criter_V);
+
+
 
 %% Problem SET 2
 
@@ -323,90 +263,6 @@ if delta==1 % only makes sense for delta=1
     end
 end
 
-% ==============
-% 2. Value function iteration (solve with and w/o Howard / policy function iteration), infinite T
-% ==============
-
-%pre-allocate matrices c, u for speed
-u = zeros(M,M);
-c = zeros(M,M);
-
-% one period return
-for i=1:M
-    for l=1:M %Think if kgrid(j) is correct or should maybe be kprime for the - kgrid(j)
-        c(i,l)= kgrid(i)^alpha - kgrid(l) + (1-delta)*kgrid(i);
-        if c(i,l)>0
-            u(i,l)=(c(i,l)^(1-gamma_c) -1)/(1-gamma_c);
-        else
-            %But I think the above should be correct, bc of same structure
-            %here
-            u(i,l)=-1e50*((kgrid(i)^alpha+(1-delta)*kgrid(i)-kgrid(l))<=0);
-            %we penalize the negative value of c by giving them an utility
-            %of minus infinity
-        end
-    end
-end
-
-% initial guesses and preallocations
-dV=1;
-
-%V= k_0^alpha - kgrid + (1-delta)*k_0;
-%V= (V.^(1-sigma) -1)/(1-sigma);
-% Alternative initial value definition
-V = zeros(1,M);
-VV = zeros(M,M);
-Vnew = zeros(1,M);
-kprime = zeros(1,M);
-Vnewhow = zeros(1,M);
-index = zeros(1,M); %stores the index of the optimal policy kprime(kgrid(i))
-%kgrid(index(i))=kprime(i)
-iter=0;
-tic
-
-% main loop
-while dV>criter_V
-    iter=iter+1;
-    for i=1:M % loop over capital today
-        for l=1:M %... and over capital tomorrow
-            VV(i,l)= u(i,l) + beta*V(l); %this is without the interpolation
-        end
-        % take maximum over capital tomorrow
-        [Vnew(i), maxI]= max(VV(i,:));
-        index(i) = maxI;
-        % record policy function - doesnt make sense
-        kprime(i) = kgrid(maxI);
-    end
-    % Howard - doesn't help much here
-    if Howard==1 && iter>3 
-        dVV=1;
-        while dVV>criter_V
-        for i=1:M 
-            temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
-            temp = (temp^(1-gamma_c) -1)/(1-gamma_c);
-            Vnewhow(i)=temp + beta*Vnew(index(i)); %Vnew(index(i))=V evaluated in kprime(i)
-            clear temp
-        end
-        dVV=max(abs(Vnewhow-Vnew));
-        Vnew=Vnewhow;
-        disp("dVHoward");
-        disp(dV);
-         
-
-        end
-    end 
-    % calculate convergence criterion
-    % but basically, we stop if the old-new difference in values is small
-    dV=max(abs(Vnew-V)); %works also without doubling max
-    % updated value function
-    V=Vnew;
-    disp('dV')
-    disp(dV)
-    iter=iter+1;
-end
-
-V_disc_VFI=V;
-kprime_VFI = kprime;
-toc
 
 %% Build plots for policy functions - Plot policy function k'(k)
 hold on
