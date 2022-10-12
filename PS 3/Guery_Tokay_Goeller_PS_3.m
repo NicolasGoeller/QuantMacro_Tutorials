@@ -102,88 +102,12 @@ simplot(p,X);
 
 %% Problem 2 : Discrete grid value function iteration 
 
-%pre-allocate matrices c, u for speed
-u = zeros(M,M,N);
-c = zeros(M,M,N);
 
-% one period return
-for i=1:M
-    for l=1:M %Think if kgrid(j) is correct or should maybe be kprime for the - kgrid(j)
-        for j=1:N %loop on value of z
-            c(i,l,j)= exp(Z_tauchen(j))*kgrid(i)^alpha - kgrid(l) + (1-delta)*kgrid(i);
-            if c(i,l,j)>0
-                u(i,l,j)=(c(i,l,j)^(1-gamma_c) -1)/(1-gamma_c);
-            else
-                %But I think the above should be correct, bc of same structure
-                %here
-                u(i,l,j)=-1e50*((exp(Z_tauchen(j))*kgrid(i)^alpha+(1-delta)*kgrid(i)-kgrid(l))<=0);
-                %we penalize the negative value of c by giving them an utility
-                %of minus infinity
-            end
-        end
-    end
-end
-
-
-%V= k_0^alpha - kgrid + (1-delta)*k_0;
-%V= (V.^(1-sigma) -1)/(1-sigma);
-% Alternative initial value definition
-V = zeros(M,N);
-VV = zeros(M,M,N);
-Vnew = zeros(M,N);
-kprime = zeros(M,N);
-%Vnewhow = zeros(M,N);
-index = zeros(M,N); %stores the index of the optimal policy kprime(kgrid(i))
-%kgrid(index(i))=kprime(i)
-iter=0;
-tic
-
-% main loop
-while dV>criter_V
-    iter=iter+1;
-    for i=1:M % loop over capital today
-        for j=1:N %... and over value of Z
-            for l=1:M %... and over capital tomorrow
-                VV(i,l,j)= u(i,l,j) + beta*V(l,j); %this is without the interpolatio
-            end
-             % take maximum over capital tomorrow
-            [Vnew(i,j), maxI]= max(VV(i,:,j));
-            index(i,j) = maxI;
-            % record policy function - doesnt make sense
-            kprime(i,j) = kgrid(maxI);
-        end
-    end
-    % Howard - doesn't help much here
-%     if Howard==1 && iter>3 
-%         dVV=1;
-%         while dVV>criter_V
-%         for i=1:M 
-%             temp = kgrid(i)^alpha - kprime(i) + (1-delta)*kgrid(i);
-%             temp = (temp^(1-gamma_c) -1)/(1-gamma_c);
-%             Vnewhow(i)=temp + beta*Vnew(index(i)); %Vnew(index(i))=V evaluated in kprime(i)
-%             clear temp
-%         end
-%         dVV=max(abs(Vnewhow-Vnew));
-%         Vnew=Vnewhow;
-%         disp("dVHoward");
-%         disp(dV);
-%          
-% 
-%         end
-%     end 
-    % calculate convergence criterion
-    % but basically, we stop if the old-new difference in values is small
-    dV=max(max(abs(Vnew-V))); 
-    % updated value function
-    V=Vnew;
-    disp('dV')
-    disp(dV)
-    iter=iter+1;
-end
-
+[V,kprime,index]=discrete_search(alpha,delta,gamma_c,beta,criter_V,M,N,Z_tauchen,kgrid);
 V_disc_VFI=V;
 kprime_VFI = kprime;
-toc
+
+%%
 
 % Build plots for policy functions - Plot policy function k'(k)
 hold on
