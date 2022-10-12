@@ -219,9 +219,6 @@ for i=1:N_sim
     end
 end
 
-
-
-
 %% Problem 4
 
 % Set parameters
