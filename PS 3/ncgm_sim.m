@@ -1,4 +1,4 @@
-function [kpath, cpath, zpath] = ncgm_sim(T, M, N, n_sim, par)
+function [kpath, cpath, zpath] = ncgm_sim(T, M, N, n_sim, par, criter_V)
 %Function ncgm_sim
 %
 %Purpose:    Run a discretized, stochastic NCGM for the indicated
@@ -53,7 +53,9 @@ for i=1:N
 end
 
 % Generate kprime matrix
-[V, kprime, index] = discrete_search();
+
+[V, kprime, index] = discrete_search(par.alpha,par.delta,par.gamma_c,par.beta, ...
+    criter_V,M,N,Z_tauchen,kgrid);
 
 kpath(1,:) = par.k0;
 
@@ -61,12 +63,11 @@ for i = 1:n_sim
     
     for t = 1:T
         % Get index of k in kgrid
-        index = find(kgrid == k);
-        % Get kprime optimal for cuurent z and k
-        kpath(t+1,i) = kprime(index,zpath(t,i));
+        k_index = index(kpath(t,i), zpath(t,i));
+        % Get kprime optimal for current z and k
+        kpath(t+1,i) = kprime(k_index,zpath(t,i));
         % Compute optimal c for k, kprime and z
         cpath(t,i) = exp(zpath(t,i))*kpath(t,i)^par.alpha - kpath(t,i) + (1-par.delta)*kpath(t,i);
-        k = kpath(t,i);
     end
 end
 

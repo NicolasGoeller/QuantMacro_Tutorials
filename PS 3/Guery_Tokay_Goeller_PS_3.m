@@ -218,10 +218,11 @@ par.delta=0.1;
 par.sigma = 0.007;
 par.k0 = ((1/par.beta-1+par.delta)/(par.alpha))^(1/(par.alpha-1)); %kbar
 par.linear = 1; %this is not relevant unless par.delta=1
+criter_v = 1e-6;
 
 % get 100 simulation of analytical solution
 
-[kpath, cpath, zpath] = ncgm_sim(T,M,N,n_sim,par);
+[kpath, cpath, zpath] = ncgm_sim(T,M,N,n_sim,par, criter_V);
 
 
 
