@@ -17,7 +17,7 @@ close all
 % ============
 alpha=0.4; % capital share - this is alpha
 beta = 0.987; % discount factor
-rho = 0.5;   % persistence of TFP shock
+rho = 0.95;   % persistence of TFP shock
 gamma_c = 2; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
 delta=0.1;
 sigma = 0.007;
@@ -110,6 +110,7 @@ kprime_VFI = kprime;
 %%
 
 % Build plots for policy functions - Plot policy function k'(k)
+figure(1)
 hold on
 title("K' policy function plot")
 plot(kgrid, kprime), xlabel('Capital values at t'), ylabel('Capital level at t+1');
@@ -120,6 +121,7 @@ set(h,'fontsize',12,'Interpreter','Latex')
 hold off
 
 %
+figure(2)
 hold on
 title("Value function plot by capital values")
 plot(kgrid, V), xlabel('Capital values at t'), ylabel('Value function result at t');
@@ -151,6 +153,7 @@ end
 
 %Graph of the EE error 
 
+figure(3)
 hold on
 title("Euler equation error with corresponding values")
 plot(kgrid, EEerror_disc), xlabel('Capital values at t'), ylabel('Euler equation error');
@@ -246,7 +249,7 @@ opath_ana = exp(zpath) .* kpath_ana(1:T,:).^par.alpha;
 
 %%
 x = 1:1:T;
-figure(2)
+figure(4)
 title('Simulated deterministic transition - infinite time')
 subplot(2,1,1)
 
@@ -308,6 +311,8 @@ disp([avgsd_oana, avgsd_olin])
 
 % Simulate new paths of Z with starting point at sigma
 T=150;
+sigma = 0.007;
+rho = 0.95;
 [Z_tauchen, P_tauchen] = tauchen(N,0,rho,sigma,2);
 p = dtmc(P_tauchen);
 X0 = [0 0 0 N_sim 0]; %simulate N_sim starting at initial value of log z = 1std
@@ -424,10 +429,9 @@ for i=1:N_sim
     klin_Bonus(1,i) = kbar;
     for t=1:T
         clin_Bonus(t,i) = (polfunc_1*((klin_Bonus(1,i)-kbar)/kbar) + polfunc_2*(exp(Xval(t,i)) - 1))*cbar + cbar; 
-        klin_Bonus(t+1,i) = exp(Xval(t,i))*klin_Bonus(t,i)^alpha + (1-delta)*klin_Bonus(t,i) - clin_Bonus(t,i);
+        klin_Bonus(t+1,i) = real(exp(Xval(t,i))*klin_Bonus(t,i)^alpha + (1-delta)*klin_Bonus(t,i) - clin_Bonus(t,i));
         ilin_Bonus(t,i) = klin_Bonus(t+1,i) -(1-delta)*klin_Bonus(t,i);
         olin_Bonus(t,i) = exp(Xval(t,i))*klin_Bonus(t,i).^alpha;
-
     end
 end
 
@@ -461,18 +465,18 @@ avgsd_k_analyt = mean(sd_k_analyt);
 
 
 %%
-% x = 1:1:T;
-% figure(2)
-% title('Simulated deterministic transition - infinite time')
-% 
-% hold on
-% plot(x, kpath_ana_bonus(1:T,1)', x, k_analyt(1:T,1)', xlabel('Time steps'), ylabel('Capital level');
-% 
-% hold off
-% 
-% h = legend('Grid solution', 'Log-linear method','Full Analytical solution','Location', 'bestoutside','Orientation','Vertical');
-% h.Title.String = 'Solution methods';
-% set(h,'fontsize',12,'Interpreter','Latex');
+x = 1:1:T;
+figure(5)
+title('Simulated deterministic transition - infinite time')
+
+hold on
+plot( x, kpath_ana_bonus(1:T,1)', x, klin_Bonus(1:T,1)', x, k_analyt(1:T,1)', xlabel('Time steps'), ylabel('Capital level'));
+
+hold off
+
+h = legend('Grid solution', 'Log-linear method','Full Analytical solution','Location', 'bestoutside','Orientation','Vertical');
+h.Title.String = 'Solution methods';
+set(h,'fontsize',12,'Interpreter','Latex');
 
 % Calculate avg std dev over simulations
 %%
