@@ -194,8 +194,6 @@ if all(eigen > 1) || all(eigen < 1)
     BKcond = 0;
 end
 
-% initial guesses and preallocations
-dV=1;
 %If the Blanchard Kahn condition is satisfied, we can find the expression
 %of "alpha1"
 if BKcond~=1
