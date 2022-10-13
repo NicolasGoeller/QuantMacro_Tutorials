@@ -194,8 +194,6 @@ if all(eigen > 1) || all(eigen < 1)
     BKcond = 0;
 end
 
-% initial guesses and preallocations
-dV=1;
 %If the Blanchard Kahn condition is satisfied, we can find the expression
 %of "alpha1"
 if BKcond~=1
@@ -216,7 +214,7 @@ olin = zeros(T+1,N_sim);
 for i=1:N_sim
     klin(1,i) = kbar;
     for t=1:T
-        clin(t,i) = (polfunc_1*((klin(1,i)-kbar)/kbar) + polfunc_2*(exp(Xval(t,i)) - 1))*cbar + cbar; 
+        clin(t,i) = (polfunc_1*((klin(t,i)-kbar)/kbar) + polfunc_2*(exp(Xval(t,i)) - 1))*cbar + cbar; 
         klin(t+1,i) = exp(Xval(t,i))*klin(t,i)^alpha + (1-delta)*klin(t,i) - clin(t,i);
         ilin(t,i) = klin(t+1,i) -(1-delta)*klin(t,i);
         olin(t,i) = exp(Xval(t,i))*klin(t,i).^alpha;
