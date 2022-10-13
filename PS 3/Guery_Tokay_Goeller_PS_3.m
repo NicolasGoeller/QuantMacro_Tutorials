@@ -259,7 +259,7 @@ hold on
 plot(x, cpath_ana(:,1)', x, clin(1:T,1)), xlabel('Time steps'), ylabel('Consumption level');
 hold off
 
-h = legend('Analytical solution', 'Log-linear method' ,'Location', 'bestoutside','Orientation','Vertical');
+h = legend('VFI solution', 'Log-linear method' ,'Location', 'bestoutside','Orientation','Vertical');
 h.Title.String = 'Solution methods';
 set(h,'fontsize',12,'Interpreter','Latex');
 
