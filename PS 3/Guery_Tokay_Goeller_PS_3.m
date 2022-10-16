@@ -1,4 +1,4 @@
-% ==========================
+% % ==========================
 % Problem set solving the stochastic neoclassical growth model different
 % ways
 % ==========================
