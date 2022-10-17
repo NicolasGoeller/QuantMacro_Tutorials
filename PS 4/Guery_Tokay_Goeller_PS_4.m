@@ -57,7 +57,7 @@ if delta==1
         kgrid=linspace(kmin,kmax,N);
     else
         temp=linspace(0,0.5,N).^5/0.5^5*(kmax-kmin);
-        kgrid=kmin+temp
+        kgrid=kmin+temp;
     end
 else
     kgrid=linspace(kmin ,kmax,N);
@@ -67,7 +67,7 @@ end
 % Markov chain
 % ============
 %[Z, P] = tauchen(M,0,rho,sigmaepsilon,1)
-[Z,P] = rouwenhorst(M,0,rho,sigmaepsilon)
+[Z,P] = rouwenhorst(M,0,rho,sigmaepsilon);
 
 % simulate discrete Markov Process
 for j=1:N_sim
@@ -96,8 +96,8 @@ Z_sim=Z_lev(z);
 options=optimset('MaxIter',1000,'MaxFunEval',1000);
 toc
 % one period return
-for i=1:N
-    for k=1:M
+for i=1:N % over a NxN matrix for k and k'
+    for k=1:M % over the M possible shock values
         for j=1:N
             if kgrid(j)>exp(Z(k))*kgrid(i)^alpha*1^(1-alpha)+(1-delta)*kgrid(i)
                 c(i,j,k)=-1;
