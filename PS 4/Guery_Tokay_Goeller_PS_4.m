@@ -76,7 +76,8 @@ end
 %for discrete
 
 % simulate discrete-time, discrete-state Markov Process
-z = dtmc_sim(P,3,T,N_sim);
+z = dismc_sim(P,3,T,N_sim);
+%Below has T on cols, N_sim on rows?
 % for j=1:N_sim
 %     z(j,1)=3; %% We are starting in the high state here?
 %     for t=2:T
