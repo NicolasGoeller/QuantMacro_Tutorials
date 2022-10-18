@@ -257,14 +257,13 @@ Rbar=alpha*(ybar/kbar);
 
 % a. write system as A_1 E[x_t+1]=A_2  x_t+B_1 epsilon_t
 % order k,a,c,l
-a= [Fill this in];
-
-b=	[Fill this in];
+a=[kbar/ybar, 0, 0, 0; beta*Rbar*(alpha-1), beta*Rbar, -gamma, -beta*Rbar*(alpha-1); 0, 0, 0, 0; 0, 1, 0, 0];
+b=[alpha + (1-delta)*kbar/ybar, 1, -cbar/ybar, 1-alpha; 0, 0, -gamma, 0; -alpha, -1, gamma, 1 + alpha; 0, rho, 0, 0];
 
 % re-order to have state variables first
 % order k,a,c,n
 nk=2;
-[f,p] = solab([Fill this in])
+[f,p] = solab(a,b,nk);
 % extract cons and lab policies
 c_polfunc=f(1,:);
 n_polfunc=f(2,:);
