@@ -3,7 +3,7 @@ function conmc = conmc_sim(mu, sigma, rho, start, T, N_sim)
 %Purpose:    Simulates the evolution of continuous markov chains according to
 %            a given starting value
 %
-%Format:     dismc = dismc_sim(mu, sigma, rho, start, T, N_sim)
+%Format:     conmc = conmc_sim(mu, sigma, rho, start, T, N_sim)
 %
 %Input:      mu         scalar, mean of disturbance distribution
 %            sigma      scalar, std. dev of disturbance distribution
@@ -22,7 +22,7 @@ for j=1:N_sim
     conmc(j,1)=start; % Set start values for all simulations
     for t=2:T
         % Get a random value for disturbance
-        epsilon = normrand(mu, sigma);
+        epsilon = normrnd(mu, sigma);
         % compute new shock value
         conmc(j,t) = rho*conmc(j,t-1)+ epsilon;
     end

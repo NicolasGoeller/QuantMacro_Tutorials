@@ -86,12 +86,13 @@ z = dismc_sim(P,3,T,N_sim);
 % end
 
 % simulate discrete-time, continuous-state Markov Process
-for j=1:N_sim
-    z_cont(j,1)=1;
-    for t=2:T
-        %z_cont(j,t)=[Fill this in if you do linearisation or deterministic sequence];
-    end
-end
+z_cont = conmc_sim(0, sigmaepsilon, rho, 1, T,N_sim);
+% for j=1:N_sim
+%     z_cont(j,1)=1;
+%     for t=2:T
+%         %z_cont(j,t)=[Fill this in if you do linearisation or deterministic sequence];
+%     end
+% end
 
 
 
