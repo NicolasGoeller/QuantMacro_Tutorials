@@ -4,8 +4,10 @@
 % ==========================
 clear
 close all
-addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem sets\PS RBC')
-addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem sets')
+%addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem sets\PS RBC')
+%addpath('C:\Users\tbroer\Dropbox\Teaching\PSE\2021 Quantitative Macro\Problem sets')
+
+%%
 % ============
 % Calibration targets
 % ============
@@ -39,12 +41,12 @@ N_sim=200; % number of simulations
 delta= InvKrat;
 alpha=Kshare;
 beta=1/Rbar;
-margprod=[1/beta-1+delta];
-KNrat=[((alpha*beta)/(1-beta*(1-delta)))^(1/(1-alpha))];
-wbar=[(1-alpha)*KNrat^alpha];
-cKrat=[(margprod/alpha)-delta];
-theta=[wbar/(Lbar^(gamma+psi)*((margprod/alpha)-delta)^gamma*(margprod/alpha)^(gamma/(alpha-1)))];
-kbar=[KNrat*Lbar];
+margprod=1/beta-1+delta;
+KNrat=((alpha*beta)/(1-beta*(1-delta)))^(1/(1-alpha));
+wbar=(1-alpha)*KNrat^alpha;
+cKrat=(margprod/alpha)-delta;
+theta=wbar/(Lbar^(gamma+psi)*((margprod/alpha)-delta)^gamma*(margprod/alpha)^(gamma/(alpha-1)));
+kbar=KNrat*Lbar;
 % ==============
 % Grids, transition probabilities, etc
 % ==============
@@ -61,27 +63,36 @@ else
     kgrid=linspace(kmin ,kmax,N);
 end
 
+%%
 % ============
 % Markov chain
 % ============
 %[Z, P] = tauchen(M,0,rho,sigmaepsilon,1)
 [Z,P] = rouwenhorst(M,0,rho,sigmaepsilon);
 
-% simulate discrete Markov Process
-for j=1:N_sim
-    z(j,1)=3;
-    for t=2:T
-        z(j,t)=[Fill this in if you do VFI];
-    end
-end
+%Need function, to iterate MC to z_t+1 based on z_t and P
+% Function needs to map into itself
 
-% simulate continuous Markov Process
+%for discrete
+
+% simulate discrete-time, discrete-state Markov Process
+z = dtmc_sim(P,3,T,N_sim);
+% for j=1:N_sim
+%     z(j,1)=3; %% We are starting in the high state here?
+%     for t=2:T
+%         z(j,t)=;
+%     end
+% end
+
+% simulate discrete-time, continuous-state Markov Process
 for j=1:N_sim
     z_cont(j,1)=1;
     for t=2:T
-        z_cont(j,t)=[Fill this in if you do linearisation or deterministic sequence];
+        %z_cont(j,t)=[Fill this in if you do linearisation or deterministic sequence];
     end
 end
+
+
 
 Z_lev=exp(Z);
 Z_sim=Z_lev(z);
