@@ -36,17 +36,15 @@ N_sim=200; % number of simulations
 % ==============
 % Problem I: Calibration
 % ==============
-
-beta=[Fill this in];
-delta=[Fill this in];
-alpha=[Fill this in];
-margprod=[Fill this in];
-KNrat=[Fill this in];
-wbar=[Fill this in];
-cKrat = [Fill this in];
-theta=[Fill this in];
-kbar=[Fill this in];
-
+delta= InvKrat;
+alpha=Kshare;
+beta=1/Rbar;
+margprod=[1/beta-1+delta];
+KNrat=[((alpha*beta)/(1-beta*(1-delta)))^(1/(1-alpha))];
+wbar=[(1-alpha)*KNrat^alpha];
+cKrat=[(margprod/alpha)-delta];
+theta=[wbar/(Lbar^(gamma+psi)*((margprod/alpha)-delta)^gamma*(margprod/alpha)^(gamma/(alpha-1)))];
+kbar=[KNrat*Lbar];
 % ==============
 % Grids, transition probabilities, etc
 % ==============
