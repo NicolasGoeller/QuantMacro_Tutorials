@@ -86,7 +86,7 @@ z = dismc_sim(P,3,T,N_sim);
 % end
 
 % simulate discrete-time, continuous-state Markov Process
-z_cont = conmc_sim(0, sigmaepsilon, rho, 1, T,N_sim);
+z_cont = conmc_sim(0, sigmaepsilon, rho, 0, T,N_sim);
 % for j=1:N_sim
 %     z_cont(j,1)=1;
 %     for t=2:T
@@ -95,7 +95,7 @@ z_cont = conmc_sim(0, sigmaepsilon, rho, 1, T,N_sim);
 % end
 
 
-
+Z_cont_lev = exp(z_cont);
 Z_lev=exp(Z);
 Z_sim=Z_lev(z);
 
@@ -258,23 +258,41 @@ cbar=ybar-delta*kbar;
 ckrat=cbar/kbar;
 Rbar=alpha*(ybar/kbar);
 
+%%
+
 % a. write system as A_1 E[x_t+1]=A_2  x_t+B_1 epsilon_t
 % order k,a,c,l
-a=[kbar/ybar, 0, 0, 0; beta*Rbar*(alpha-1), beta*Rbar, -gamma, -beta*Rbar*(alpha-1); 0, 0, 0, 0; 0, 1, 0, 0];
-b=[alpha + (1-delta)*kbar/ybar, 1, -cbar/ybar, 1-alpha; 0, 0, -gamma, 0; -alpha, -1, gamma, 1 + alpha; 0, rho, 0, 0];
+a=[     kbar/ybar       ,       0       ,       0       ,       0           ;
+    beta*Rbar*(alpha-1) ,   beta*Rbar   ,   -gamma      , -beta*Rbar*(alpha-1);
+            0           ,       0       ,       0       ,                   0;
+            0           ,       1       ,       0       ,                   0];
+
+
+
+b=[alpha + (1-delta)*kbar/ybar  ,       1     ,        -cbar/ybar   ,   1-alpha ; 
+            0                   ,       0     ,         -gamma      ,       0   ; 
+            -alpha              ,       -1    ,         gamma       , 1 + alpha ; 
+            0                   ,       rho   ,       0             ,     0     ];
+
+%%
 
 % re-order to have state variables first
 % order k,a,c,n
 nk=2;
 [f,p] = solab(a,b,nk);
+
+%%
 % extract cons and lab policies
 c_polfunc=f(1,:);
 n_polfunc=f(2,:);
 LOM=p(1,:);
+
+%%
 % policy functions are in log deviations. so need to pre-multiply by cbar
 % and add cbar to get levels
 for j=1:M
     c_pol_lin(:,j)=cbar*exp(c_polfunc(1)*log(kgrid/kbar)+c_polfunc(2)*Z(j));
+    %c_pol_lin(:,j)=cbar*(c_polfunc(1)*) 
     n_pol_lin(:,j)=[Fill this in];
     k_pol_lin(:,j)=[Fill this in];
 end
@@ -283,15 +301,15 @@ end
 k_sim_lin(:,1)=kbar*ones(N_sim,1);
 for j=1:N_sim
     for t=2:T
-        c_sim_lin(j,t-1)=[Fill this in];
-        L_sim_lin(j,t-1)=[Fill this in];
-        k_sim_lin(j,t)=[Fill this in];
+        c_sim_lin(j,t-1)=(c_polfunc(1)*(k_sim_lin(j,t-1)-kbar)/kbar+c_polfunc(2)*(Z_cont_lev(j,t-1)-1))* cbar +cbar;
+        L_sim_lin(j,t-1)=(n_polfunc(1)*(k_sim_lin(j,t-1)-kbar)/kbar+n_polfunc(2)*(Z_cont_lev(j,t-1)-1))* Lbar + Lbar;
+        k_sim_lin(j,t)=(LOM(1)*(k_sim_lin(j,t-1)-kbar)/kbar+LOM(2)*(Z_cont_lev(j,t-1)-1))*kbar + kbar;
         inv_sim_lin(j,t-1)=[Fill this in];
         y_sim_lin(j,t-1)=[Fill this in];
     end
     
-    c_sim_lin(j,T)=[Fill this in];
-    L_sim_lin(j,T)=[Fill this in];
+    c_sim_lin(j,T)=(c_polfunc(1)*(k_sim_lin(j,T)-kbar)/kbar+c_polfunc(2)*(Z_cont_lev(j,T)-1))* cbar +cbar;
+    L_sim_lin(j,T)=(n_polfunc(1)*(k_sim_lin(j,T)-kbar)/kbar+n_polfunc(2)*(Z_cont_lev(j,T)-1))* Lbar + Lbar;
     inv_sim_lin(j,T)=[Fill this in];
     y_sim_lin(j,T)=[Fill this in];
 end
