@@ -99,7 +99,7 @@ z_cont = conmc_sim(0, sigmaepsilon, rho, 1, T,N_sim);
 Z_lev=exp(Z);
 Z_sim=Z_lev(z);
 
-
+%%
 
 % ==============
 % Option I:  Fully discretized value function iteration
@@ -244,6 +244,9 @@ for sim=1:N_sim
     L_interp_sim(sim,T)=[Fill this in];
     y_interp_sim(sim,T)=[Fill this in];
 end
+
+
+%%
 
 % =====================
 % Option III:   Log-linearization
