@@ -12,7 +12,8 @@ function conmc = conmc_sim(mu, sigma, rho, start, T, N_sim)
 %            T          scalar, length of markov chain series
 %            N_sim      scalar, number of simulations
 %
-%Output:     conmc       N_sim*T matrix, of markov chain value series
+%Output:     conmc       N_sim*T matrix, of markov chain value series (in
+%log)
 
 % Pre-allocate for speed
 conmc = zeros(N_sim,T);
