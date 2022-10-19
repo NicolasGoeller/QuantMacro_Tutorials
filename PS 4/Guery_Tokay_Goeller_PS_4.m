@@ -374,21 +374,21 @@ figure('Name','Policy functions') % this is not asked
 subplot(3,1,1)
 title('Consumption','Interpreter','Latex','fontsize',13)
 hold on
-plot([c_disc(:,plotz)])
-plot([c_interp(:,plotz)])
+% plot([c_disc(:,plotz)])
+% plot([c_interp(:,plotz)])
 plot([c_pol_lin(:,plotz)])
 xlabel('Capital','Interpreter','Latex','fontsize',13)
 subplot(3,1,2)
 title('Labor supply','Interpreter','Latex','fontsize',13)
 hold on
-plot([L_disc(:,plotz)])
-plot([L_interp(:,plotz)])
+% plot([L_disc(:,plotz)])
+% plot([L_interp(:,plotz)])
 plot([n_pol_lin(:,plotz)])
 subplot(3,1,3)
 title('K prime','Interpreter','Latex','fontsize',13)
 hold on
-plot([kprime_disc(:,plotz)])
-plot([kprime_interp(:,plotz)])
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
 plot([k_pol_lin(:,plotz)])
 xlabel('Capital','Interpreter','Latex','fontsize',13)
 h = legend('Discrete','Interpolate','Linearised','Location', 'best','Orientation','Vertical');
@@ -402,10 +402,10 @@ hold on
 title('Simulation of the capital stock')
 %for sim=1:N_sim
 sim=1
-plot(k_disc_sim(sim,1:T),'k','Linewidth',1)
-plot(k_interp_sim(sim,1:T),'k:','Linewidth',1)
+% plot(k_disc_sim(sim,1:T),'k','Linewidth',1)
+% plot(k_interp_sim(sim,1:T),'k:','Linewidth',1)
 plot(k_sim_lin(sim,1:T),'k--','Linewidth',1)
-plot(k_det_sim(sim,1:T),'k-+','Linewidth',1)
+%plot(k_det_sim(sim,1:T),'k-+','Linewidth',1)
 %end
 h = legend('DP discrete', 'DP interpol', 'Linear','cumulative MIT shocks','Location', 'best','Orientation','Vertical');
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
@@ -414,21 +414,21 @@ hold on
 title('Simulation of consumption')
 %for sim=1:N_sim
 sim=1
-plot(c_disc_sim(sim,1:T),'k','Linewidth',1)
-plot(c_interp_sim(sim,1:T),'k:','Linewidth',1)
+% plot(c_disc_sim(sim,1:T),'k','Linewidth',1)
+% plot(c_interp_sim(sim,1:T),'k:','Linewidth',1)
 plot(c_sim_lin(sim,1:T),'k--','Linewidth',1)
-plot(c_det_sim(sim,1:T),'k-+','Linewidth',1)
+%plot(c_det_sim(sim,1:T),'k-+','Linewidth',1)
 h = legend('DP discrete', 'DP interpol', 'Linear','cumulative MIT shocks','Location', 'best','Orientation','Vertical');
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
 subplot(3,1,3)
 hold on
 title('Simulation of consumption')
 %for sim=1:N_sim
-sim=1
-plot(L_disc_sim(sim,1:T),'k','Linewidth',1)
-plot(L_interp_sim(sim,1:T),'k:','Linewidth',1)
+sim=1;
+% plot(L_disc_sim(sim,1:T),'k','Linewidth',1)
+% plot(L_interp_sim(sim,1:T),'k:','Linewidth',1)
 plot(L_sim_lin(sim,1:T),'k--','Linewidth',1)
-plot(L_det_sim(sim,1:T),'k-+','Linewidth',1)
+%plot(L_det_sim(sim,1:T),'k-+','Linewidth',1)
 h = legend('DP discrete', 'DP interpol', 'Linear','cumulative MIT shocks','Location', 'best','Orientation','Vertical');
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
 
@@ -439,16 +439,16 @@ disp([mean(std(log(Z_sim)')),mean(std(log(z_cont)')),(sigmaepsilon^2/(1-rho^2))^
 for i=1:N_sim
     rho_emp(i)=corr(log(Z_sim(i,1:end-1))',log(Z_sim(i,2:end))');
     rho_emp_cont(i)=corr(log(z_cont(i,1:end-1))',log(z_cont(i,2:end))');
-    corr_Cy_disc(i)=corr(y_disc_sim(i,:)',c_disc_sim(i,:)');
-    corr_invy_disc(i)=corr(y_disc_sim(i,:)',inv_disc_sim(i,:)');
-    corr_Ly_disc(i)=corr(y_disc_sim(i,:)',L_disc_sim(i,:)');
-    corr_Cy_interp(i)=corr(y_interp_sim(i,:)',c_interp_sim(i,:)');
-    corr_invy_interp(i)=corr(y_interp_sim(i,:)',inv_interp_sim(i,:)');
-    corr_Ly_interp(i)=corr(y_interp_sim(i,:)',L_interp_sim(i,:)');
-        corr_Cy_det(i)=corr(y_det_sim(i,:)',c_det_sim(i,:)');
-    corr_invy_det(i)=corr(y_det_sim(i,:)',inv_det_sim(i,:)');
-    corr_Ly_det(i)=corr(y_det_sim(i,:)',L_det_sim(i,:)');
-        corr_Cy_lin(i)=corr(y_sim_lin(i,:)',c_sim_lin(i,:)');
+    %corr_Cy_disc(i)=corr(y_disc_sim(i,:)',c_disc_sim(i,:)');
+    %corr_invy_disc(i)=corr(y_disc_sim(i,:)',inv_disc_sim(i,:)');
+    %corr_Ly_disc(i)=corr(y_disc_sim(i,:)',L_disc_sim(i,:)');
+    %corr_Cy_interp(i)=corr(y_interp_sim(i,:)',c_interp_sim(i,:)');
+    %corr_invy_interp(i)=corr(y_interp_sim(i,:)',inv_interp_sim(i,:)');
+    %corr_Ly_interp(i)=corr(y_interp_sim(i,:)',L_interp_sim(i,:)');
+    %corr_Cy_det(i)=corr(y_det_sim(i,:)',c_det_sim(i,:)');
+    %corr_invy_det(i)=corr(y_det_sim(i,:)',inv_det_sim(i,:)');
+    %corr_Ly_det(i)=corr(y_det_sim(i,:)',L_det_sim(i,:)');
+    corr_Cy_lin(i)=corr(y_sim_lin(i,:)',c_sim_lin(i,:)');
     corr_invy_lin(i)=corr(y_sim_lin(i,:)',inv_sim_lin(i,:)');
     corr_Ly_lin(i)=corr(y_sim_lin(i,:)',L_sim_lin(i,:)');
 end
@@ -458,20 +458,20 @@ disp('Standard devations of Z discrete, continuous')
 disp([Fill this in])
 
 disp('Correlation with y of C,I,L')
-disp('VFI discrete')
-disp([Fill this in])
-disp('VFI interpolation')
-disp([Fill this in])
+% disp('VFI discrete')
+% disp([Fill this in])
+% disp('VFI interpolation')
+% disp([Fill this in])
 disp('Linear')
 disp([Fill this in])
-disp('IRF')
-disp([Fill this in])
+% disp('IRF')
+% disp([Fill this in])
 disp('Standard devations of L,i,c relative to y')
-disp('VFI discrete')
-disp([Fill this in])
-disp('VFI interpolation')
-disp([Fill this in])
+% disp('VFI discrete')
+% disp([Fill this in])
+% disp('VFI interpolation')
+% disp([Fill this in])
 disp('Linear')
 disp([Fill this in])
-disp('IRF')
-disp([Fill this in])
+% disp('IRF')
+% disp([Fill this in])
