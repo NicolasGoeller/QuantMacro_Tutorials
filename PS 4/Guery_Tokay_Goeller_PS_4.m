@@ -168,7 +168,7 @@ for j=1:N_sim
     L_sim_lin(j,T)=(n_polfunc(1)*(k_sim_lin(j,T)-kbar)/kbar+n_polfunc(2)*(Z_cont_lev(j,T)-1))* Lbar + Lbar;
     k_sim_lin(j,T+1)= (LOM(1)*(k_sim_lin(j,T)-kbar)/kbar+LOM(2)*(Z_cont_lev(j,T)-1))*kbar + kbar;
     inv_sim_lin(j,T)=k_sim_lin(j,T+1)-(1-delta)*k_sim_lin(j,T);
-    y_sim_lin(j,T)=Z_cont_lev(j,T)*(k_sim_lin(j,t)^alpha)*L_sim_lin(j,t)^(1-alpha);
+    y_sim_lin(j,T)=Z_cont_lev(j,T)*(k_sim_lin(j,T)^alpha)*L_sim_lin(j,T)^(1-alpha);
 end
 
 
@@ -260,22 +260,13 @@ disp([mean(std(Z_sim')),mean(std(z_cont')),(sigmaepsilon^2/(1-rho^2))^0.5])
 for i=1:N_sim
     rho_emp(i)=corr(Z_sim(i,1:end-1)',Z_sim(i,2:end)');
     rho_emp_cont(i)=corr((z_cont(i,1:end-1))',(z_cont(i,2:end))');
-    %corr_Cy_disc(i)=corr(y_disc_sim(i,:)',c_disc_sim(i,:)');
-    %corr_invy_disc(i)=corr(y_disc_sim(i,:)',inv_disc_sim(i,:)');
-    %corr_Ly_disc(i)=corr(y_disc_sim(i,:)',L_disc_sim(i,:)');
-    %corr_Cy_interp(i)=corr(y_interp_sim(i,:)',c_interp_sim(i,:)');
-    %corr_invy_interp(i)=corr(y_interp_sim(i,:)',inv_interp_sim(i,:)');
-    %corr_Ly_interp(i)=corr(y_interp_sim(i,:)',L_interp_sim(i,:)');
-    %corr_Cy_det(i)=corr(y_det_sim(i,:)',c_det_sim(i,:)');
-    %corr_invy_det(i)=corr(y_det_sim(i,:)',inv_det_sim(i,:)');
-    %corr_Ly_det(i)=corr(y_det_sim(i,:)',L_det_sim(i,:)');
     corr_Cy_lin(i)=corr(y_sim_lin(i,:)',c_sim_lin(i,:)');
     corr_invy_lin(i)=corr(y_sim_lin(i,:)',inv_sim_lin(i,:)');
     corr_Ly_lin(i)=corr(y_sim_lin(i,:)',L_sim_lin(i,:)');
-    std_c(i) = std(c_sim_lin(i,:));
-    std_inv(i) = std(inv_sim_lin(i,:));
-    std_L(i) = std(L_sim_lin(i,:));
-    std_y(i) = std(y_sim_lin(i,:));
+    std_c(i) = std(c_sim_lin(i,:)');
+    std_inv(i) = std(inv_sim_lin(i,:)');
+    std_L(i) = std(L_sim_lin(i,:)');
+    std_y(i) = std(y_sim_lin(i,:)');
 end
 
 mean_std_c = mean(std_c);
