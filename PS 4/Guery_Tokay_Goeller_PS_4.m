@@ -32,8 +32,8 @@ criter_V = 1e-6; % conv criterion for value function
 N=80; % number of grid points
 linear=1; % grid linear or not
 M=3; % number of support points for the shock
-T=150; % periods for transition
-N_sim=200; % number of simulations
+T=100; % periods for transition
+N_sim=100; % number of simulations
 
 % ==============
 % Problem I: Calibration
@@ -290,12 +290,14 @@ LOM=p(1,:);
 %%
 % policy functions are in log deviations. so need to pre-multiply by cbar
 % and add cbar to get levels
-for j=1:M
-    c_pol_lin(:,j)=cbar*exp(c_polfunc(1)*log(kgrid/kbar)+c_polfunc(2)*Z(j));
-    %c_pol_lin(:,j)=cbar*(c_polfunc(1)*) 
-    n_pol_lin(:,j)=[Fill this in];
-    k_pol_lin(:,j)=[Fill this in];
-end
+% for j=1:M
+%     c_pol_lin(:,j)=cbar*exp(c_polfunc(1)*log(kgrid/kbar)+c_polfunc(2)*Z(j));
+%     %c_pol_lin(:,j)=cbar*(c_polfunc(1)*) 
+%     n_pol_lin(:,j)=[Fill this in];
+%     k_pol_lin(:,j)=[Fill this in];
+% end
+
+%%
 
 
 k_sim_lin(:,1)=kbar*ones(N_sim,1);
@@ -304,15 +306,17 @@ for j=1:N_sim
         c_sim_lin(j,t-1)=(c_polfunc(1)*(k_sim_lin(j,t-1)-kbar)/kbar+c_polfunc(2)*(Z_cont_lev(j,t-1)-1))* cbar +cbar;
         L_sim_lin(j,t-1)=(n_polfunc(1)*(k_sim_lin(j,t-1)-kbar)/kbar+n_polfunc(2)*(Z_cont_lev(j,t-1)-1))* Lbar + Lbar;
         k_sim_lin(j,t)=(LOM(1)*(k_sim_lin(j,t-1)-kbar)/kbar+LOM(2)*(Z_cont_lev(j,t-1)-1))*kbar + kbar;
-        inv_sim_lin(j,t-1)=[Fill this in];
-        y_sim_lin(j,t-1)=[Fill this in];
+        inv_sim_lin(j,t-1)=k_sim_lin(j,t)-(1-delta)*k_sim_lin(j,t-1);
+        y_sim_lin(j,t-1)=Z_cont_lev(j,t-1)*(k_sim_lin(j,t-1)^alpha)*L_sim_lin(j,t-1)^(1-alpha);
     end
     
     c_sim_lin(j,T)=(c_polfunc(1)*(k_sim_lin(j,T)-kbar)/kbar+c_polfunc(2)*(Z_cont_lev(j,T)-1))* cbar +cbar;
     L_sim_lin(j,T)=(n_polfunc(1)*(k_sim_lin(j,T)-kbar)/kbar+n_polfunc(2)*(Z_cont_lev(j,T)-1))* Lbar + Lbar;
-    inv_sim_lin(j,T)=[Fill this in];
-    y_sim_lin(j,T)=[Fill this in];
+    inv_sim_lin(j,T)=0;   %k_sim_lin(j,T)-(1-delta)*k_sim_lin(j,T-1);
+    y_sim_lin(j,T)=Z_cont_lev(j,T)*(k_sim_lin(j,t)^alpha)*L_sim_lin(j,t)^(1-alpha);
 end
+
+%%
 
 % ==============
 % Option IV  Transition after one-time shock
@@ -364,41 +368,46 @@ c_det_sim=c_det_sim(:,1:T);
 L_det_sim=L_det_sim(:,1:T);
 k_det_sim=k_det_sim(:,1:T);
 
+%%
+
 
 % ==============
 % Figures
 % ==============
 
 plotz=3;
-figure('Name','Policy functions') % this is not asked
-subplot(3,1,1)
-title('Consumption','Interpreter','Latex','fontsize',13)
-hold on
+figure('Name','Policy functions'); % this is not asked
+subplot(3,1,1);
+title('Consumption','Interpreter','Latex','fontsize',13);
+hold on;
 % plot([c_disc(:,plotz)])
 % plot([c_interp(:,plotz)])
-plot([c_pol_lin(:,plotz)])
-xlabel('Capital','Interpreter','Latex','fontsize',13)
-subplot(3,1,2)
-title('Labor supply','Interpreter','Latex','fontsize',13)
-hold on
+plot([c_sim_lin(:,plotz)]);
+xlabel('Capital','Interpreter','Latex','fontsize',13);
+subplot(3,1,2);
+title('Labor supply','Interpreter','Latex','fontsize',13);
+hold on;
 % plot([L_disc(:,plotz)])
 % plot([L_interp(:,plotz)])
-plot([n_pol_lin(:,plotz)])
-subplot(3,1,3)
-title('K prime','Interpreter','Latex','fontsize',13)
-hold on
+plot([L_sim_lin(:,plotz)]);
+xlabel('Capital','Interpreter','Latex','fontsize',13);
+subplot(3,1,3);
+title('K prime','Interpreter','Latex','fontsize',13);
+hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([k_pol_lin(:,plotz)])
-xlabel('Capital','Interpreter','Latex','fontsize',13)
-h = legend('Discrete','Interpolate','Linearised','Location', 'best','Orientation','Vertical');
+plot([k_sim_lin(:,plotz)]);
+xlabel('Capital','Interpreter','Latex','fontsize',13);
+h = legend('Linearised','Location', 'best','Orientation','Vertical');
 set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
 
-
+%%
 
 figure('Name','Simulated time series')
+
 subplot(3,1,1)
 hold on
+
 title('Simulation of the capital stock')
 %for sim=1:N_sim
 sim=1
@@ -407,10 +416,12 @@ sim=1
 plot(k_sim_lin(sim,1:T),'k--','Linewidth',1)
 %plot(k_det_sim(sim,1:T),'k-+','Linewidth',1)
 %end
-h = legend('DP discrete', 'DP interpol', 'Linear','cumulative MIT shocks','Location', 'best','Orientation','Vertical');
+h = legend('Linear','Location', 'best','Orientation','Vertical');
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
+
 subplot(3,1,2)
 hold on
+
 title('Simulation of consumption')
 %for sim=1:N_sim
 sim=1
@@ -418,27 +429,32 @@ sim=1
 % plot(c_interp_sim(sim,1:T),'k:','Linewidth',1)
 plot(c_sim_lin(sim,1:T),'k--','Linewidth',1)
 %plot(c_det_sim(sim,1:T),'k-+','Linewidth',1)
-h = legend('DP discrete', 'DP interpol', 'Linear','cumulative MIT shocks','Location', 'best','Orientation','Vertical');
+h = legend('Linear','Location', 'best','Orientation','Vertical');
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
+
 subplot(3,1,3)
 hold on
-title('Simulation of consumption')
+
+title('Simulation of labour supply')
 %for sim=1:N_sim
 sim=1;
 % plot(L_disc_sim(sim,1:T),'k','Linewidth',1)
 % plot(L_interp_sim(sim,1:T),'k:','Linewidth',1)
 plot(L_sim_lin(sim,1:T),'k--','Linewidth',1)
 %plot(L_det_sim(sim,1:T),'k-+','Linewidth',1)
-h = legend('DP discrete', 'DP interpol', 'Linear','cumulative MIT shocks','Location', 'best','Orientation','Vertical');
+h = legend('Linear','Location', 'best','Orientation','Vertical');
 set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
 
-
+%%
 
 disp('Standard devations of Z discrete, continuous, theoretical')
-disp([mean(std(log(Z_sim)')),mean(std(log(z_cont)')),(sigmaepsilon^2/(1-rho^2))^0.5])
+disp([mean(std(Z_sim')),mean(std(z_cont')),(sigmaepsilon^2/(1-rho^2))^0.5])
+
+%%
+
 for i=1:N_sim
-    rho_emp(i)=corr(log(Z_sim(i,1:end-1))',log(Z_sim(i,2:end))');
-    rho_emp_cont(i)=corr(log(z_cont(i,1:end-1))',log(z_cont(i,2:end))');
+    rho_emp(i)=corr(Z_sim(i,1:end-1)',Z_sim(i,2:end)');
+    rho_emp_cont(i)=corr((z_cont(i,1:end-1))',(z_cont(i,2:end))');
     %corr_Cy_disc(i)=corr(y_disc_sim(i,:)',c_disc_sim(i,:)');
     %corr_invy_disc(i)=corr(y_disc_sim(i,:)',inv_disc_sim(i,:)');
     %corr_Ly_disc(i)=corr(y_disc_sim(i,:)',L_disc_sim(i,:)');
@@ -452,10 +468,15 @@ for i=1:N_sim
     corr_invy_lin(i)=corr(y_sim_lin(i,:)',inv_sim_lin(i,:)');
     corr_Ly_lin(i)=corr(y_sim_lin(i,:)',L_sim_lin(i,:)');
 end
-disp('Autocorrelation of Z discrete, continuous')
-disp([Fill this in])
-disp('Standard devations of Z discrete, continuous')
-disp([Fill this in])
+
+%%
+
+disp('Autocorrelation of Z discrete, continuous');
+disp(mean(rho_emp_cont));
+disp('Standard devations of Z discrete, continuous');
+disp(std(rho_emp_cont));
+
+%%
 
 disp('Correlation with y of C,I,L')
 % disp('VFI discrete')
@@ -463,15 +484,18 @@ disp('Correlation with y of C,I,L')
 % disp('VFI interpolation')
 % disp([Fill this in])
 disp('Linear')
-disp([Fill this in])
+disp([mean(corr_Cy_lin), mean(corr_invy_lin), mean(corr_Ly_lin)]);
 % disp('IRF')
 % disp([Fill this in])
-disp('Standard devations of L,i,c relative to y')
+
+%%
+
+disp('Standard deviations of C,I,L relative to y')
 % disp('VFI discrete')
 % disp([Fill this in])
 % disp('VFI interpolation')
 % disp([Fill this in])
 disp('Linear')
-disp([Fill this in])
+disp([std(c_sim_lin), mean(corr_invy_lin), mean(corr_Ly_lin)])
 % disp('IRF')
 % disp([Fill this in])
