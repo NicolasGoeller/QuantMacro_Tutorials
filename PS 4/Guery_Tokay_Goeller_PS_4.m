@@ -467,7 +467,16 @@ for i=1:N_sim
     corr_Cy_lin(i)=corr(y_sim_lin(i,:)',c_sim_lin(i,:)');
     corr_invy_lin(i)=corr(y_sim_lin(i,:)',inv_sim_lin(i,:)');
     corr_Ly_lin(i)=corr(y_sim_lin(i,:)',L_sim_lin(i,:)');
+    std_c(i) = std(c_sim_lin(i,:));
+    std_inv(i) = std(inv_sim_lin(i,:));
+    std_L(i) = std(L_sim_lin(i,:));
+    std_y(i) = std(y_sim_lin(i,:));
 end
+
+mean_std_c = mean(std_c);
+mean_std_inv = mean(std_inv);
+mean_std_L = mean(std_L);
+mean_std_y = mean(std_y);
 
 %%
 
@@ -496,6 +505,6 @@ disp('Standard deviations of C,I,L relative to y')
 % disp('VFI interpolation')
 % disp([Fill this in])
 disp('Linear')
-disp([std(c_sim_lin), mean(corr_invy_lin), mean(corr_Ly_lin)])
+disp([mean_std_c/mean_std_y, mean_std_inv/mean_std_y, mean_std_L/mean_std_y])
 % disp('IRF')
 % disp([Fill this in])
