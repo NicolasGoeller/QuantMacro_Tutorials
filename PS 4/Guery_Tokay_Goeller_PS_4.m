@@ -168,7 +168,7 @@ for j=1:N_sim
     L_sim_lin(j,T)=(n_polfunc(1)*(k_sim_lin(j,T)-kbar)/kbar+n_polfunc(2)*(Z_cont_lev(j,T)-1))* Lbar + Lbar;
     k_sim_lin(j,T+1)= (LOM(1)*(k_sim_lin(j,T)-kbar)/kbar+LOM(2)*(Z_cont_lev(j,T)-1))*kbar + kbar;
     inv_sim_lin(j,T)=k_sim_lin(j,T+1)-(1-delta)*k_sim_lin(j,T);
-    y_sim_lin(j,T)=Z_cont_lev(j,T)*(k_sim_lin(j,t)^alpha)*L_sim_lin(j,t)^(1-alpha);
+    y_sim_lin(j,T)=Z_cont_lev(j,T)*(k_sim_lin(j,T)^alpha)*L_sim_lin(j,T)^(1-alpha);
 end
 
 
@@ -259,7 +259,7 @@ disp([mean(std(Z_sim')),mean(std(z_cont')),(sigmaepsilon^2/(1-rho^2))^0.5])
 
 for i=1:N_sim
     rho_emp(i)=corr(Z_sim(i,1:end-1)',Z_sim(i,2:end)');
-    rho_emp_cont(i)=corr((z_cont(i,1:end-1))',(z_cont(i,2:end))');
+    rho_emp_cont(i)=corr(z_cont(i,1:end-1)',z_cont(i,2:end)');
     %corr_Cy_disc(i)=corr(y_disc_sim(i,:)',c_disc_sim(i,:)');
     %corr_invy_disc(i)=corr(y_disc_sim(i,:)',inv_disc_sim(i,:)');
     %corr_Ly_disc(i)=corr(y_disc_sim(i,:)',L_disc_sim(i,:)');
@@ -285,10 +285,10 @@ mean_std_y = mean(std_y);
 
 %%
 
-disp('Autocorrelation of Z discrete, continuous');
-disp(mean(rho_emp_cont));
-disp('Standard devations of Z discrete, continuous');
-disp(std(rho_emp_cont));
+disp('Autocorrelation of Z discrete, continuous')
+disp([mean(rho_emp), mean(rho_emp_cont)])
+disp('Standard devations of Z discrete, continuous')
+disp([mean(std(rho_emp)), mean(std(rho_emp_cont))])
 
 %%
 
