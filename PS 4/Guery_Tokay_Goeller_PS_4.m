@@ -259,7 +259,7 @@ disp([mean(std(Z_sim')),mean(std(z_cont')),(sigmaepsilon^2/(1-rho^2))^0.5])
 
 for i=1:N_sim
     rho_emp(i)=corr(Z_sim(i,1:end-1)',Z_sim(i,2:end)');
-    rho_emp_cont(i)=corr((z_cont(i,1:end-1))',(z_cont(i,2:end))');
+    rho_emp_cont(i)=corr(z_cont(i,1:end-1)',z_cont(i,2:end)');
     corr_Cy_lin(i)=corr(y_sim_lin(i,:)',c_sim_lin(i,:)');
     corr_invy_lin(i)=corr(y_sim_lin(i,:)',inv_sim_lin(i,:)');
     corr_Ly_lin(i)=corr(y_sim_lin(i,:)',L_sim_lin(i,:)');
@@ -276,10 +276,10 @@ mean_std_y = mean(std_y);
 
 %%
 
-disp('Autocorrelation of Z discrete, continuous');
-disp(mean(rho_emp_cont));
-disp('Standard devations of Z discrete, continuous');
-disp(std(rho_emp_cont));
+disp('Autocorrelation of Z discrete, continuous')
+disp([mean(rho_emp), mean(rho_emp_cont)])
+disp('Standard devations of Z discrete, continuous')
+disp([mean(std(rho_emp)), mean(std(rho_emp_cont))])
 
 %%
 
