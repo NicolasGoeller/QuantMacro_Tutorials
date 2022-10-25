@@ -10,24 +10,29 @@ close all
 % ============
 % parameters  - you may have to change this according to instructions
 % ============
-alpha=0.4; % capital share was named theat before
-beta = 0.99; % disfcount factor
-sigma = 1.0001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
-delta=1;
+
+
+params.alpha=0.4; % capital share was named theat before
+params.beta = 0.99; % disfcount factor
+params.sigma = 1.0001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
+params.delta=1;
+params.phipi = 1.5 ; %parameter of the monetary policy feedback rule
+params.varphi = 1; %intratemporal first order condition for labor supply parameter
+params.theta = 0.666667; %probability of a firm not resetting its price
+params.rhoa = 0.95 ; %AR1 parameter for labor productivity
+params.rhonu = 0.5 ; %AR1 parameter for monetary policy shocks
+params.lambda = 0.3 ; %share of hands-to-mouth households
 
 % ============
 % options and convergence criteria
 % ============
 
-criter_V = 1e-7; % conv criterion for value function
-T=100; % periods for transition
+params.criter_V = 1e-7; % conv criterion for value function
+params.T=100; % periods for transition
 
-%mean of capital non-stochastic steady state
-kbar=((1/beta-1+delta)/(alpha))^(1/(alpha-1)); 
-cbar= kbar^alpha-delta*kbar
-
-% initial level of capital in the transition
-k_0=kbar*0.75; % you may have to change this from the problem set instructions
+% ===========
+% calculated parameters in 1
+% ===========
 
 
 % ==============
