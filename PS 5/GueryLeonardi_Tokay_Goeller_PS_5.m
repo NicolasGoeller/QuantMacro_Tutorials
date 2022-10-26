@@ -11,7 +11,6 @@ close all
 % parameters  - you may have to change this according to instructions
 % ============
 
-
 params.alpha=0.4; % capital share was named theat before
 params.beta = 0.99; % disfcount factor
 params.sigma = 1.0001; % CRRA coefficient (for 1 equals log, but need to replace the function, so set close to 1)
@@ -22,6 +21,15 @@ params.theta = 0.666667; %probability of a firm not resetting its price
 params.rhoa = 0.95 ; %AR1 parameter for labor productivity
 params.rhonu = 0.5 ; %AR1 parameter for monetary policy shocks
 params.lambda = 0.3 ; %share of hands-to-mouth households
+params.taud = 0.1; %firm profit redistribution share
+params.vartheta = %Frisch elasticity of labor supply
+
+% =============
+% Shock parameters
+% =============
+
+
+
 
 % ============
 % options and convergence criteria
@@ -90,6 +98,22 @@ params.cbar = cbar;
 %kt = [ones(T,1)*0.75*kbar; 0];
 %ct = [ones(T,1)*0.8*cbar; 0];
 
+%% Blueprint for solution
+
+% Define equilibrium error function
+% - TANK model
+% - RANK model
+
+% Set initial guess vectors to eq-ss values
+
+% Set perturbance vectors to assigned t=0 shock
+epsi_ = [0.005; zeros(T,1)];
+epsi_a = zeros(T+1,1);
+
+% start Broyden Function (including initial jacobian)
+
+
+
 %% Broydens Method
 
 % Broydens method Finite time T=10
@@ -100,124 +124,67 @@ x1 = [kt1; ct1];
 jacob1 = ncgm_jacob(x1, params);
 trans1 = ncgm_broyden(x1, jacob1, 1e-6, T1, params);
 
-% Broydens method Finite time T=100
-T2 = 100;
-kt2 = ones(T2,1)*0.75*kbar;
-ct2 = ones(T2,1)*0.8*cbar;
-x2 = [kt2; ct2];
-jacob2 = ncgm_jacob(x2, params);
-trans2 = ncgm_broyden(x2, jacob2, 1e-6, T2, params);
-
-% Broydens method Finite time T=200
-T3 = 200;
-kt3 = ones(T3,1)*0.75*kbar;
-ct3 = ones(T3,1)*0.8*cbar;
-x3 = [kt3; ct3];
-jacob3 = ncgm_jacob(x3, params);
-trans3 = ncgm_broyden(x3, jacob3, 1e-6, T3, params);
-
-% Broydens method Infinite time - set T=?
-T4 = 15;
-kt4 = ones(T4,1)*0.75*kbar;
-ct4 = ones(T4,1)*0.8*cbar;
-x4 = [kt4; ct4];
-jacob4 = ncgm_jacob(x4, params);
-trans4 = ncgm_broyden(x4, jacob4, 1e-6, T4, params);
-
-%% Multiple Shooting
-T=20;
-criter_V=1e-8;
-c0_shots_T10 =ncgm_multiple_shooting(alpha, beta, delta, sigma, T, criter_V);
-
-% T=100;
-% criter_V=1e-8;
-% c0_shots_T100=ncgm_multiple_shooting(alpha, beta, delta, sigma, T, criter_V);
-% 
-% T=200;
-% criter_V=1e-8;
-% c0_shots_T200=ncgm_multiple_shooting(alpha, beta, delta, sigma, T, criter_V);
-
-%%
-% =====================
-% 3. Log-linearization
-% =====================
-
-% some ratios as function of parameters
-ybar=kbar^alpha;
-cbar=ybar-delta*kbar;
-% need for matrix form of loglin
-ckrat=cbar/kbar;
-
-% a. write system as A E[y_t+1]+B y_t=0
 
 
-
-% order c,k,z
-A=[-sigma, beta *(alpha-1)*alpha*kbar^(alpha-1) ; 0 , 1 ];
-
-B= [-sigma , 0 ; -ckrat,(1/beta)];
-
-D = inv(A)*B;
-
-% note that these are right-hand eigenvectors
-[ ev lambda]=eig(D); %%%give the egein vectors and eigen values of D
-aaa=inv(ev); %%% give the invert of the eigen vector matrix
-
-% find eigenvalues equal or larger than one, and check that they equal the
-% number of jump variables - in that case, set BKcond to 1
-
-BKcond = 1;
-eigen = [lambda(1,1) lambda(2,2)];
-if all(eigen > 1) || all(eigen < 1)
-    BKcond = 0;
-end
-
-%If the Blanchard Kahn condition is satisfied, we can find the expression
-%of "alpha1"
-if BKcond~=1
-    disp('BK conditions not satisfied')
-else
-    bkev =find(abs(diag(lambda))>1);
-    invP=aaa(bkev,:);%%Select the element of the invert of the vector matrix needed to compute the policy function
-    polfunc= -invP(1,2)/invP(1);% you need to find the policy for consumption here : derived analytically 
-end
-
-% policy functions are in log deviations. so need to pre-multiply by cbar
-% and add cbar to get levels
+%% IRF plotting
 
 
-% calculate the deterministic transition  using the linearised policy
-% functions, and law of motion
-%%
-% Broydens method Infinite time - set T=?
-T4 = 51;
-T=50;
-kt4 = ones(T4,1)*0.75*kbar;
-ct4 = ones(T4,1)*0.8*cbar;
-x4 = [kt4; ct4];
-jacob4 = ncgm_jacob(x4, params);
-k_lina_num2 = ncgm_broyden(x4, jacob4, 1e-6, T4, params);
-k_lina_num = k_lina_num2(1:T4);
+figure('Name','Impulse Response functions'); % this is not asked
+
+subplot(3,2,1);
+title('Consumption','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([c_disc(:,plotz)])
+% plot([c_interp(:,plotz)])
+plot([c_sim_lin(:,plotz)]);
+ylabel('Consumption','Interpreter','Latex','fontsize',13);
+
+subplot(3,2,2);
+title('Labor supply','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([L_disc(:,plotz)])
+% plot([L_interp(:,plotz)])
+plot([L_sim_lin(:,plotz)]);
+ylabel('Labor supply','Interpreter','Latex','fontsize',13);
+
+subplot(3,2,3);
+title('Inflation','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Inflation','Interpreter','Latex','fontsize',13);
+
+subplot(3,2,4);
+title('Interest rate','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Interest rate','Interpreter','Latex','fontsize',13);
+
+subplot(3,2,5);
+title('Output','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Output','Interpreter','Latex','fontsize',13);
+
+subplot(3,2,6);
+title('Shock','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Shock','Interpreter','Latex','fontsize',13);
+
+h = legend('Linearised','Location', 'best','Orientation','Vertical');
+set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
 
 
-k_lina_num=ncgm_broyden(x4, jacob4, 1e-6, 50, params); %values goes from k1 to kT (k(t) vector)
-k_lin(1)=k_0;
-for t=2:T
-    c_lin(t-1)=polfunc*((k_lin(t-1)-kbar)/kbar)*cbar + cbar;
-    k_lin(t)=k_lin(t-1)^alpha +(1-delta)*k_lin(t-1) - c_lin(t-1);
-end
 
-%Here is generating a sequence of k lagged by 1 unit of time 
-k_lina(1)=k_lin(1,2);
 
-k_lin_num = k_lina_num; 
-k_lin_num(end)=[];% values goes from k0 to kT-1 (k(t-1))
-k_lina_num(1)=[];
-
-for t=2:(T)
-    c_lina(t-1)=polfunc*((k_lina(t-1)-kbar)/kbar)*cbar + cbar;
-    k_lina(t)=k_lina(t-1)^alpha +(1-delta)*k_lina(t-1) - c_lina(t-1);
-end
 
 %%
 % ==============
