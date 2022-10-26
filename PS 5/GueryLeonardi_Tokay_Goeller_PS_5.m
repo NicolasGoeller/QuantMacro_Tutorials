@@ -36,7 +36,7 @@ params.maxiter = 500; %maxiter for broyden
 % options and convergence criteria
 % ============
 
-params.criter_V = 1e-7; % conv criterion for value function
+params.criter_V = 1e-10; % conv criterion for value function
 params.T=20; % periods for transition
 T=params.T;
 
@@ -90,6 +90,18 @@ subplot(2,2,3);
 plot(trans_tank_nu_shock(2*T+1:3*T,1));
 subplot(2,2,4);
 plot(trans_tank_nu_shock(3*T+1:4*T,1));
+
+%% Plotting error in equations
+error_test_tank= tank_error(trans_tank_nu_shock,z_nu,params);
+subplot(2,2,1);
+plot(error_test_tank(1:T,1));
+subplot(2,2,2);
+plot(error_test_tank(T+1:2*T,1));
+subplot(2,2,3);
+plot(error_test_tank(2*T+1:3*T,1));
+subplot(2,2,4);
+plot(error_test_tank(3*T+1:4*T,1));
+
 
 %%
 
