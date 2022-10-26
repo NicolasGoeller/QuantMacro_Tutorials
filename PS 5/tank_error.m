@@ -13,6 +13,8 @@ function error = tank_error(x, z, params)
 % Preallocate error vector for speed
 error = zeros(length(x),1);
 
+T= params.T;
+
 kappa = (params.sigma + params.vartheta)*(1-params.theta)*(1-params.beta*params.theta)/params.beta;
 
 % calculate errors in the following equation that define equilibrium in
@@ -27,7 +29,7 @@ for t=1:T
     % cS(t+1)-cS(t)-(1/sigma)*(phi_pi*pi(t)+nu(t)-pi(t+1)) equation error
     error(T+t,1) = x(2*T+t+1)-x(2*T+t)-(1/params.sigma)*(params.phipi*x(T+t)+z(T+t)-x(T+t+1));
     % y(t+1)-y(t)-(1/sigma)*(phi_pi*pi(t)+nu(t)-pi(t+1)) equation error
-    error(2*T+t,1) = x(t+1)-x(t)-(1/params.sigma)*(params.phipi*x(T+t)+z(T+t)-x(T+t+1);
+    error(2*T+t,1) = x(t+1)-x(t)-(1/params.sigma)*(params.phipi*x(T+t)+z(T+t)-x(T+t+1));
     % pi(t)-beta*pi(t+1)-kappa*(y(t)-a(t)) equation error
-    error(2*T+t,1) = x(T+t)-params.beta*x(T+t+1)-kappa+(x(t)-z(t));
+    error(3*T+t,1) = x(T+t)-params.beta*x(T+t+1)-kappa+(x(t)-z(t));
 end

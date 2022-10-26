@@ -11,7 +11,7 @@ jacob = zeros(length(x0), length(x0));
 % Loop over each input variable
 for i = 1:length(x0)
     dx = zeros(length(x0),1); % prepare vector of variable changes
-    dx(i) = x0(i)*1e-3; % set variable-specific change
+    dx(i) = 1e-3; % set variable-specific change
     x1 = x0 + dx; % compute new input value
     %Calculate numerical approximation to jacobian by forward difference
     jacob(:,i) = (tank_error(x1,z,params)- tank_error(x0,z,params))/ dx(i);

@@ -30,13 +30,15 @@ params.vartheta = 0.666667; %Frisch elasticity of labor supply
 
 params.epsilon_nu = 0.005; %monetary policy shock
 params.epsilon_a = 0.005; %productivity shock
+params.maxiter = 500; %maxiter for broyden
 
 % ============
 % options and convergence criteria
 % ============
 
 params.criter_V = 1e-7; % conv criterion for value function
-params.T=100; % periods for transition
+params.T=20; % periods for transition
+T=params.T;
 
 % ===========
 % calculated parameters at steady state
@@ -50,41 +52,58 @@ params.T=100; % periods for transition
 % - RANK model
 
 % Set initial guess vectors to eq-ss values
-x_tank_init=zeros(4*T,1);
-x_rank_init=zeros(3*T,1);
+x_tank_init=ones(4*params.T,1);
+x_rank_init=zeros(3*params.T,1);
 
 
 % Set perturbance vectors to assigned t=0 shock
-epsi_nu_shock = [params.epsilon_nu; zeros(T,1)];
-epsi_a_no_shock = zeros(T+1,1);
-epsi_nu_no_shock = zeros(T+1,1);
-epsi_a_shock = [params.epsilon_a; zeros(T,1)];
+epsi_nu_shock = [params.epsilon_nu; zeros(params.T,1)];
+epsi_a_no_shock = zeros(params.T+1,1);
+epsi_nu_no_shock = zeros(params.T+1,1);
+epsi_a_shock = [params.epsilon_a; zeros(params.T,1)];
 
 z_nu = [epsi_a_no_shock epsi_nu_shock];
 z_a = [epsi_a_shock epsi_nu_no_shock];
 
 % start Broyden Function (including initial jacobian)
 
-
+%h= tank_error(x_tank_init, z_nu, params);
 
 %% Broydens Method for TANK model
 
 % Broydens method with monetary shock epsilon_nu at t=0
 T1 = 10;
 jacob_tank = tank_jacob(x_tank_init,z_nu, params);
-trans1 = ncgm_broyden(x1, jacob1, 1e-6, T1, params);
+trans_tank_nu_shock = TANK_broyden(x_tank_init, z_nu, jacob_tank, params.maxiter, params);  
 
-% Broydens method with profuctivity shock epsilon_a at t=0
-T1 = 10;
-jacob_tank = tank_jacob(x_tank_init,z_a, params);
-trans1 = ncgm_broyden(x1, jacob1, 1e-6, T1, params);
+% Input dictionary
+% trans_tank_nu_shock(1:T) output (y)
+% trans_tank_nu_shock(T+1:2T) inflation (pi)
+% trans_tank_nu_shock(2T+1:3T) consumption of smoothers (cS)
+% trans_tank_nu_shock(3T+1:end) consumption of Hand-to-mouth (cH)
+
+subplot(2,2,1);
+plot(trans_tank_nu_shock(1:T,1));
+subplot(2,2,2);
+plot(trans_tank_nu_shock(T+1:2*T,1));
+subplot(2,2,3);
+plot(trans_tank_nu_shock(2*T+1:3*T,1));
+subplot(2,2,4);
+plot(trans_tank_nu_shock(3*T+1:4*T,1));
+
+%%
+
+% Broydens method with productivity shock epsilon_a at t=0
+% T1 = 10;
+% jacob_tank = tank_jacob(x_tank_init,z_a, params);
+% trans1 = ncgm_broyden(x1, jacob1, 1e-6, T1, params);
 
 
 
-%% IRF plotting
+%% IRF plotting TANK with monetary shock
 
 
-figure('Name','Impulse Response functions'); % this is not asked
+figure('Monetary Shock','Impulse Response functions'); % this is not asked
 
 subplot(3,2,1);
 title('Consumption','Interpreter','Latex','fontsize',13);
