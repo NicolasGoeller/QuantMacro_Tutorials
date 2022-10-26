@@ -1,4 +1,4 @@
-    function error=rbc_obj_start(x,par)%alpha,beta,sigma,delta,kbar,cbar)
+    function error=rbc_obj_start(x,params)%alpha,beta,sigma,delta,kbar,cbar)
 
 %x(1:T) is capital
 %x(T+1:2T) is consumption
