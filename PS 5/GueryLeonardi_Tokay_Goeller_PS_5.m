@@ -22,6 +22,7 @@ params.theta = 0.666667; %probability of a firm not resetting its price
 params.rhoa = 0.95 ; %AR1 parameter for labor productivity
 params.rhonu = 0.5 ; %AR1 parameter for monetary policy shocks
 params.lambda = 0.3 ; %share of hands-to-mouth households
+params.taudD = 0.1 ; %fraction of the profits Dt consumed by H
 
 % ============
 % options and convergence criteria
@@ -31,8 +32,9 @@ params.criter_V = 1e-7; % conv criterion for value function
 params.T=100; % periods for transition
 
 % ===========
-% calculated parameters in 1
+% calculated parameters at steady state
 % ===========
+
 
 
 % ==============
@@ -70,14 +72,6 @@ end
 %%
 
 % c. numerical solution algorithms to above problems
-
-% param values
-params.alpha = 0.4;
-params.beta = 0.99;
-params.sigma = 1.000001;
-params.delta = 1;
-params.kterm = 0;
-
 
 %set guesses
 kbar=((1/params.beta-1+params.delta)/(params.alpha*params.beta))^(1/(params.alpha-1));
