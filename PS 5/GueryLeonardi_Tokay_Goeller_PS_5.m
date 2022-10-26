@@ -55,8 +55,13 @@ x_rank_init=zeros(3*T,1);
 
 
 % Set perturbance vectors to assigned t=0 shock
-epsi_nu = [0.005; zeros(T,1)];
-epsi_a = zeros(T+1,1);
+epsi_nu_shock = [params.epsilon_nu; zeros(T,1)];
+epsi_a_no_shock = zeros(T+1,1);
+epsi_nu_no_shock = zeros(T+1,1);
+epsi_a_shock = [params.epsilon_a; zeros(T,1)];
+
+z_nu = [epsi_a_no_shock epsi_nu_shock];
+z_a = [epsi_a_shock epsi_nu_no_shock];
 
 % start Broyden Function (including initial jacobian)
 
@@ -64,9 +69,14 @@ epsi_a = zeros(T+1,1);
 
 %% Broydens Method for TANK model
 
-% Broydens method Finite time T=10
+% Broydens method with monetary shock epsilon_nu at t=0
 T1 = 10;
-jacob_tank = ncgm_jacob(x1, params);
+jacob_tank = tank_jacob(x_tank_init,z_nu, params);
+trans1 = ncgm_broyden(x1, jacob1, 1e-6, T1, params);
+
+% Broydens method with profuctivity shock epsilon_a at t=0
+T1 = 10;
+jacob_tank = tank_jacob(x_tank_init,z_a, params);
 trans1 = ncgm_broyden(x1, jacob1, 1e-6, T1, params);
 
 

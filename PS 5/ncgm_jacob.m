@@ -1,8 +1,9 @@
-function jacob = ncgm_jacob(x0, ncgm_par)
+function jacob = ncgm_jacob(x0,  params)
 % This function computes a numerical approximation of a jacobian matrix at
 % a specific point (combination of values)
 % x0: vector of values to evaluate the function at
-% ncgm_par: set of parameters, to be fed into the function
+% params: set of parameters, to be fed into the function
+
 
 % Set matrix of appropriate size
 jacob = zeros(length(x0), length(x0));
@@ -13,5 +14,5 @@ for i = 1:length(x0)
     dx(i) = x0(i)*1e-3; % set variable-specific change
     x1 = x0 + dx; % compute new input value
     %Calculate numerical approximation to jacobian by forward difference
-    jacob(:,i) = (rbc_obj_start(x1, ncgm_par)- rbc_obj_start(x0, ncgm_par))/ dx(i);
+    jacob(:,i) = (rbc_obj_start(x1, params)- rbc_obj_start(x0, params))/ dx(i);
 end
