@@ -12,13 +12,13 @@ B = jacob_guess;
 iter = 0;
 
 %check if sum squared of dev from 0 in equation system
-while sum(error.^2) > params.criter_V
+%while sum(error.^2) > params.criter_V
+while max(abs(error)) > params.criter_V
     iter = iter + 1;
 
     %Compute difference of new guess
     s = -inv(B)*error;
      
-
     %compute new guess 
     guess_new = guess + s; 
     %Impose non-negativity constraint
@@ -35,7 +35,9 @@ while sum(error.^2) > params.criter_V
     if abs(s'*s) > 1e-2 % evaluate if norm of x difference is not 0
         B = B + ((y - B*s)*s')/(s'*s); %Compute updated Jacobian
     end
+
     if iter >= maxiter % if iteration reaches very large value terminate loop 
+        disp("max iter reached")
         break
     end
 

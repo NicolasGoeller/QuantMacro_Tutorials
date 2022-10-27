@@ -30,7 +30,7 @@ params.vartheta = 0.666667; %Frisch elasticity of labor supply
 
 params.epsilon_nu = 0.005; %monetary policy shock
 params.epsilon_a = 0.005; %productivity shock
-params.maxiter = 500; %maxiter for broyden
+params.maxiter = 1000; %maxiter for broyden
 
 % ============
 % options and convergence criteria
