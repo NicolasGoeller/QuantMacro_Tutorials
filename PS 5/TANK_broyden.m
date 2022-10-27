@@ -35,7 +35,7 @@ while max(abs(error)) > params.criter_V
     if abs(s'*s) > 1e-2 % evaluate if norm of x difference is not 0
         B = B + ((y - B*s)*s')/(s'*s); %Compute updated Jacobian
     end
-
+    max(abs(error))
     if iter >= maxiter % if iteration reaches very large value terminate loop 
         disp("max iter reached")
         break
