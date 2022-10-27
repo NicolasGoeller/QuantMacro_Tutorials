@@ -62,8 +62,21 @@ epsi_a_no_shock = zeros(params.T+1,1);
 epsi_nu_no_shock = zeros(params.T+1,1);
 epsi_a_shock = [params.epsilon_a; zeros(params.T,1)];
 
-z_nu = [epsi_a_no_shock epsi_nu_shock];
-z_a = [epsi_a_shock epsi_nu_no_shock];
+nu_val_nu_shock = zeros(T+1,1); %vector of values of nu given its persistence and the shock at t=0
+nu_val_nu_no_shock = zeros(T+1,1); %vector of values of nu without shock (always 0)
+a_val_a_shock = zeros(T+1,1); %vector of values of a given its persistence and the shock at t=0
+a_val_a_no_shock = zeros(T+1,1); %vector of values of a without shock (always 0)
+
+nu_val_nu_shock(1)=epsi_nu_shock(1); %initializing nu value at t=0 (shock of epsi)
+a_val_a_shock(1)=epsi_a_shock(1); %initalizing a value at t=0 (shock of epsi)
+
+for t=1:T
+    nu_val_nu_shock(t+1)=params.rhonu*nu_val_nu_shock(t)+epsi_nu_shock(t+1); %constructing value given AR1 process
+    a_val_a_shock(t+1)=params.rhoa*a_val_a_shock(t)+epsi_a_shock(t+1); %AR1 process of a
+end
+
+z_nu_shock = [epsi_a_no_shock nu_val_nu_shock];
+z_a_shock = [a_val_a_shock epsi_nu_no_shock];
 
 % start Broyden Function (including initial jacobian)
 
@@ -73,8 +86,10 @@ z_a = [epsi_a_shock epsi_nu_no_shock];
 
 % Broydens method with monetary shock epsilon_nu at t=0
 T1 = 10;
-jacob_tank = tank_jacob(x_tank_init,z_nu, params);
-trans_tank_nu_shock = TANK_broyden(x_tank_init, z_nu, jacob_tank, params.maxiter, params);  
+jacob_tank = tank_jacob(x_tank_init,z_nu_shock, params);
+trans_tank_nu_shock = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank, params.maxiter, params);  
+
+%investment_tank_nu_shock= params.phipi*trans_tank_nu_shock(T+1:2T,1) + nu_val_nu_shock(2:end);
 
 % Input dictionary
 % trans_tank_nu_shock(1:T) output (y)
@@ -92,7 +107,7 @@ subplot(2,2,4);
 plot(trans_tank_nu_shock(3*T+1:4*T,1));
 
 %% Plotting error in equations
-error_test_tank= tank_error(trans_tank_nu_shock,z_nu,params);
+error_test_tank= tank_error(trans_tank_nu_shock,z_nu_shock,params);
 subplot(2,2,1);
 plot(error_test_tank(1:T,1));
 subplot(2,2,2);
