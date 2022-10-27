@@ -30,7 +30,7 @@ params.vartheta = 0.666667; %Frisch elasticity of labor supply
 
 params.epsilon_nu = 0.005; %monetary policy shock
 params.epsilon_a = 0.005; %productivity shock
-params.maxiter = 500; %maxiter for broyden
+params.maxiter = 1000; %maxiter for broyden
 
 % ============
 % options and convergence criteria
@@ -55,31 +55,31 @@ T=params.T;
 % - RANK model
 
 % Set initial guess vectors to eq-ss values
-x_tank_init=ones(4*params.T,1);
+x_tank_init=ones(3*params.T,1);
 x_rank_init=zeros(3*params.T,1);
 
 
 % Set perturbance vectors to assigned t=0 shock
-epsi_nu_shock = [params.epsilon_nu; zeros(params.T,1)];
-epsi_a_no_shock = zeros(params.T+1,1);
-epsi_nu_no_shock = zeros(params.T+1,1);
-epsi_a_shock = [params.epsilon_a; zeros(params.T,1)];
+epsi_nu_shock = [params.epsilon_nu; zeros(params.T-1,1)];
+epsi_a_no_shock = zeros(params.T,1);
+epsi_nu_no_shock = zeros(params.T,1);
+epsi_a_shock = [params.epsilon_a; zeros(params.T-1,1)];
 
-nu_val_nu_shock = zeros(T+1,1); %vector of values of nu given its persistence and the shock at t=0
-nu_val_nu_no_shock = zeros(T+1,1); %vector of values of nu without shock (always 0)
-a_val_a_shock = zeros(T+1,1); %vector of values of a given its persistence and the shock at t=0
-a_val_a_no_shock = zeros(T+1,1); %vector of values of a without shock (always 0)
+nu_val_nu_shock = zeros(T,1); %vector of values of nu given its persistence and the shock at t=0
+nu_val_nu_no_shock = zeros(T,1); %vector of values of nu without shock (always 0)
+a_val_a_shock = zeros(T,1); %vector of values of a given its persistence and the shock at t=0
+a_val_a_no_shock = zeros(T,1); %vector of values of a without shock (always 0)
 
 nu_val_nu_shock(1)=epsi_nu_shock(1); %initializing nu value at t=0 (shock of epsi)
 a_val_a_shock(1)=epsi_a_shock(1); %initalizing a value at t=0 (shock of epsi)
 
-for t=1:T
+for t=1:T-1
     nu_val_nu_shock(t+1)=params.rhonu*nu_val_nu_shock(t)+epsi_nu_shock(t+1); %constructing value given AR1 process
     a_val_a_shock(t+1)=params.rhoa*a_val_a_shock(t)+epsi_a_shock(t+1); %AR1 process of a
 end
 
-z_nu_shock = [epsi_a_no_shock nu_val_nu_shock];
-z_a_shock = [a_val_a_shock epsi_nu_no_shock];
+z_nu_shock = [epsi_a_no_shock; nu_val_nu_shock];
+z_a_shock = [a_val_a_shock; epsi_nu_no_shock];
 
 % start Broyden Function (including initial jacobian)
 
