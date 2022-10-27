@@ -30,14 +30,14 @@ params.vartheta = 0.666667; %Frisch elasticity of labor supply
 
 params.epsilon_nu = 0.005; %monetary policy shock
 params.epsilon_a = 0.005; %productivity shock
-params.maxiter = 1000; %maxiter for broyden
+params.maxiter = 100; %maxiter for broyden
 
 % ============
 % options and convergence criteria
 % ============
 
 params.criter_V = 1e-10; % conv criterion for value function
-params.T=20; % periods for transition
+params.T=100; % periods for transition
 T=params.T;
 
 % ===========
@@ -93,32 +93,46 @@ z_a_shock = [a_val_a_shock; epsi_nu_no_shock];
 % T1 = 10;
 % jacob_tank = tank_jacob(x_tank_init,z_nu_shock, params);
 % trans_tank_nu_shock = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank, params.maxiter, params);  
+% 
+% 
+% %investment_tank_nu_shock= params.phipi*trans_tank_nu_shock(T+1:2T,1) + nu_val_nu_shock(2:end);
+% 
+% subplot(3,1,1);
+% plot(trans_tank_nu_shock(1:T,1));
+% subplot(3,1,2);
+% plot(trans_tank_nu_shock(T+1:2*T,1));
+% subplot(3,1,3);
+% plot(trans_tank_nu_shock(2*T+1:3*T,1));
 
-%investment_tank_nu_shock= params.phipi*trans_tank_nu_shock(T+1:2T,1) + nu_val_nu_shock(2:end);
+%%
 
-x_fsolve= fsolve(@(x) tank_error(x,z_nu_shock,params),x_tank_init);
+x_fsolve_nushock= fsolve(@(x) tank_error(x,z_nu_shock,params),x_tank_init);
+cH_nushock=(x_fsolve_nushock(1:T)-(1-params.lambda)*x_fsolve_nushock(2*T+1:3*T))/params.lambda;
+interest_nushock=params.phipi*x_fsolve_nushock(T+1:2*T)+nu_val_nu_shock;
+
+
 
 % Input dictionary
-% trans_tank_nu_shock(1:T) output (y)
-% trans_tank_nu_shock(T+1:2T) inflation (pi)
-% trans_tank_nu_shock(2T+1:3T) consumption of smoothers (cS)
-% trans_tank_nu_shock(3T+1:end) consumption of Hand-to-mouth (cH)
+% x_fsolve_nushock(1:T) output (y)
+% x_fsolve_nushock(T+1:2T) inflation (pi)
+% x_fsolve_nushock(2T+1:3T) consumption of smoothers (cS)
+
 
 %for large T
-% subplot(3,1,1);
-% plot(x_fsolve(1:T/5,1));
-% subplot(3,1,2);
-% plot(x_fsolve(T+1:1.2*T,1));
-% subplot(3,1,3);
-% plot(x_fsolve(2*T+1:2.2*T,1));
-
-
 subplot(3,1,1);
-plot(x_fsolve(1:T,1));
+plot(x_fsolve_nushock(1:T/5,1));
 subplot(3,1,2);
-plot(x_fsolve(T+1:2*T,1));
+plot(x_fsolve_nushock(T+1:1.2*T,1));
 subplot(3,1,3);
-plot(x_fsolve(2*T+1:3*T,1));
+plot(x_fsolve_nushock(2*T+1:2.2*T,1));
+
+
+% subplot(3,1,1);
+% plot(x_fsolve_nushock(1:T,1));
+% subplot(3,1,2);
+% plot(x_fsolve_nushock(T+1:2*T,1));
+% subplot(3,1,3);
+% plot(x_fsolve_nushock(2*T+1:3*T,1));
 
 
 

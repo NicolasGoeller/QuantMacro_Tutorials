@@ -37,6 +37,15 @@ error(2*T+1,1) = x(2*T+1);
 % %error(2*T+t,1) = x(T+t)-params.beta*x(T+t+1)-kappa+(x(t)-z(t));
 
 
+% error(T,1) = x(T);
+% % %error(0*T+t,1) = x(2*T+t+1)-x(2*T+t)-(1/params.sigma)*(params.phipi*x(T+t)+z(T+t)-x(T+t+1));
+% % % y(t)-y(t-1)-(1/sigma)*(phi_pi*pi(t-1)+nu(t-1)-pi(t)) equation error
+% error(2*T,1) = x(2*T);
+% % %error(1*T+t,1) = x(t+1)-x(t)-(1/params.sigma)*(params.phipi*x(T+t)+z(T+t)-x(T+t+1));
+% % % pi(t)-beta*pi(t+1)-kappa*(y(t)-a(t)) equation error
+% error(3*T,1) = x(3*T);
+% % %error(2*T+t,1) = x(T+t)-params.beta*x(T+t+1)-kappa+(x(t)-z(t));
+
 
 for t=2:T
 %for t = 1:T
