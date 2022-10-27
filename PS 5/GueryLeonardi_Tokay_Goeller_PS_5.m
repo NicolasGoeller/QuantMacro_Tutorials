@@ -30,7 +30,7 @@ params.vartheta = 0.666667; %Frisch elasticity of labor supply
 
 params.epsilon_nu = 0.005; %monetary policy shock
 params.epsilon_a = 0.005; %productivity shock
-params.maxiter = 1000; %maxiter for broyden
+params.maxiter = 100; %maxiter for broyden
 
 % ============
 % options and convergence criteria
@@ -55,7 +55,7 @@ T=params.T;
 % - RANK model
 
 % Set initial guess vectors to eq-ss values
-x_tank_init=ones(3*params.T,1);
+x_tank_init=zeros(3*params.T,1);
 x_rank_init=zeros(3*params.T,1);
 
 
@@ -90,8 +90,19 @@ z_a_shock = [a_val_a_shock; epsi_nu_no_shock];
 %  ==============================
 
 % Broydens method with monetary shock epsilon_nu at t=0
-jacob_tank1 = tank_jacob(x_tank_init,z_nu_shock, params);
-trans_tank_nu_shock1 = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank1, params.maxiter, params);
+% T1 = 10;
+% jacob_tank = tank_jacob(x_tank_init,z_nu_shock, params);
+% trans_tank_nu_shock = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank, params.maxiter, params);  
+% 
+% 
+% %investment_tank_nu_shock= params.phipi*trans_tank_nu_shock(T+1:2T,1) + nu_val_nu_shock(2:end);
+% 
+% subplot(3,1,1);
+% plot(trans_tank_nu_shock(1:T,1));
+% subplot(3,1,2);
+% plot(trans_tank_nu_shock(T+1:2*T,1));
+% subplot(3,1,3);
+% plot(trans_tank_nu_shock(2*T+1:3*T,1));
 
 output1 = trans_tank_nu_shock1(1:T);
 inflation1 = trans_tank_nu_shock1(T+1:2*T);
@@ -99,6 +110,7 @@ consumption1 = trans_tank_nu_shock1(2*T+1:end);
 interest1 = params.phipi*inflation1 + z_nu_shock(T+1:end);
 labor1 = output1 - z_nu_shock(1:T);
 shock1 = z_nu_shock(T+1:end);
+%%
 
 % Broydens method with production shock epsilon_a at t=0
 jacob_tank2 = tank_jacob(x_tank_init,z_a_shock, params);
@@ -111,25 +123,117 @@ interest2 = params.phipi*inflation2 + z_nu_shock(T+1:end);
 labor2 = output2 - z_nu_shock(1:T);
 shock2 = z_nu_shock(1:T);
 %%
-% Input dictionary
-% trans_tank_nu_shock(1:T) output (y)
-% trans_tank_nu_shock(T+1:2T) inflation (pi)
-% trans_tank_nu_shock(2T+1:3T) consumption of smoothers (cS)
-% trans_tank_nu_shock(3T+1:end) consumption of Hand-to-mouth (cH)
+x_fsolve_nushock= fsolve(@(x) tank_error(x,z_nu_shock,params),x_tank_init);
+cH_nushock=(x_fsolve_nushock(1:T)-(1-params.lambda)*x_fsolve_nushock(2*T+1:3*T))/params.lambda;
+interest_nushock=params.phipi*x_fsolve_nushock(T+1:2*T)+nu_val_nu_shock;
 
-subplot(2,2,1);
-plot(trans_tank_nu_shock(1:T,1));
-subplot(2,2,2);
-plot(trans_tank_nu_shock(T+1:2*T,1));
-subplot(2,2,3);
-plot(trans_tank_nu_shock(2*T+1:3*T,1));
-subplot(2,2,4);
-plot(trans_tank_nu_shock(3*T+1:4*T,1));
+
+
+% Input dictionary
+% x_fsolve_nushock(1:T) output (y)
+% x_fsolve_nushock(T+1:2T) inflation (pi)
+% x_fsolve_nushock(2T+1:3T) consumption of smoothers (cS)
+
+
+%for large T
+subplot(3,1,1);
+plot(x_fsolve_nushock(1:T/5,1));
+subplot(3,1,2);
+plot(x_fsolve_nushock(T+1:1.2*T,1));
+subplot(3,1,3);
+plot(x_fsolve_nushock(2*T+1:2.2*T,1));
+
+
+% subplot(3,1,1);
+% plot(x_fsolve_nushock(1:T,1));
+% subplot(3,1,2);
+% plot(x_fsolve_nushock(T+1:2*T,1));
+% subplot(3,1,3);
+% plot(x_fsolve_nushock(2*T+1:3*T,1));
+
+
 
 
 %  ==============================
 %% Option II : Log-lin method for TANK models (eq system is already linear)
 %  ==============================
+
+%once the system is reduced, we have a set of 5 eq and 5 variables with 2
+%AR1 process, we can then compute a log linear solution
+
+kappa= (params.sigma + params.vartheta)*(1-params.theta)*(1-params.beta*params.theta)/params.beta;
+
+% a. write system as A_1 E[x_t+1]=A_2  x_t+B_1 epsilon_t
+% order nu, a, y, pi, cS
+a=[ 0 ,       0       ,       0       , 1/params.sigma,       0           ;
+    0 , 0, 1, 1/params.sigma,0;
+    0,0,0,params.beta,0;
+    0,1,0,0,0;
+    1,0,0,0,0];
+
+
+
+b=[1/params.sigma,0,0, params.phipi/params.sigma,1;
+    1/params.sigma,0,1,params.phipi/params.sigma,0;
+    0, kappa, -kappa, 1, 0;
+    0,params.rhoa,0,0,0;
+    params.rhonu, 0, 0, 0, 0];
+
+%%
+
+% re-order to have state variables first
+% order nu, a, y, pi, cS
+nk=2;
+[f,p] = solab(a,b,nk);
+
+%%
+% extract cons and lab policies
+y_polfunc=f(1,:);
+pi_polfunc=f(2,:);
+cS_polfunc=f(3,:);
+LOM_nu=p(1,:);
+LOM_a =p(2,:);
+
+%%
+% policy functions are in log deviations. so need to pre-multiply by cbar
+% and add cbar to get levels
+% for j=1:M
+%     c_pol_lin(:,j)=cbar*exp(c_polfunc(1)*log(kgrid/kbar)+c_polfunc(2)*Z(j));
+%     %c_pol_lin(:,j)=cbar*(c_polfunc(1)*) 
+%     n_pol_lin(:,j)=[Fill this in];
+%     k_pol_lin(:,j)=[Fill this in];
+% end
+
+%%
+
+y_loglin=zeros(T,1);
+pi_loglin=zeros(T,1);
+cS_loglin=zeros(T,1);
+
+for t=2:T
+    y_loglin(t)=y_polfunc
+end
+
+
+k_sim_lin(:,1)=kbar*ones(N_sim,1);
+for j=1:N_sim
+    for t=2:T
+        c_sim_lin(j,t-1)=(c_polfunc(1)*(k_sim_lin(j,t-1)-kbar)/kbar+c_polfunc(2)*(Z_cont_lev(j,t-1)-1))* cbar +cbar;
+        L_sim_lin(j,t-1)=(n_polfunc(1)*(k_sim_lin(j,t-1)-kbar)/kbar+n_polfunc(2)*(Z_cont_lev(j,t-1)-1))* Lbar + Lbar;
+        k_sim_lin(j,t)=(LOM(1)*(k_sim_lin(j,t-1)-kbar)/kbar+LOM(2)*(Z_cont_lev(j,t-1)-1))*kbar + kbar;
+        inv_sim_lin(j,t-1)=k_sim_lin(j,t)-(1-delta)*k_sim_lin(j,t-1);
+        y_sim_lin(j,t-1)=Z_cont_lev(j,t-1)*(k_sim_lin(j,t-1)^alpha)*L_sim_lin(j,t-1)^(1-alpha);
+    end
+    
+    c_sim_lin(j,T)=(c_polfunc(1)*(k_sim_lin(j,T)-kbar)/kbar+c_polfunc(2)*(Z_cont_lev(j,T)-1))* cbar +cbar;
+    L_sim_lin(j,T)=(n_polfunc(1)*(k_sim_lin(j,T)-kbar)/kbar+n_polfunc(2)*(Z_cont_lev(j,T)-1))* Lbar + Lbar;
+    k_sim_lin(j,T+1)= (LOM(1)*(k_sim_lin(j,T)-kbar)/kbar+LOM(2)*(Z_cont_lev(j,T)-1))*kbar + kbar;
+    inv_sim_lin(j,T)=k_sim_lin(j,T+1)-(1-delta)*k_sim_lin(j,T);
+    y_sim_lin(j,T)=Z_cont_lev(j,T)*(k_sim_lin(j,T)^alpha)*L_sim_lin(j,T)^(1-alpha);
+end
+
+
+
 
 
 
