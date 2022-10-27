@@ -45,7 +45,10 @@ T=params.T;
 % ===========
 
 
+
+%  ===========================
 %% Blueprint for solution
+%  ===========================
 
 % Define equilibrium error function
 % - TANK model
@@ -82,7 +85,9 @@ z_a_shock = [a_val_a_shock epsi_nu_no_shock];
 
 %h= tank_error(x_tank_init, z_nu, params);
 
-%% Broydens Method for TANK model
+%  ==============================
+%% Option I : Broydens Method for TANK model
+%  ==============================
 
 % Broydens method with monetary shock epsilon_nu at t=0
 T1 = 10;
@@ -105,6 +110,13 @@ subplot(2,2,3);
 plot(trans_tank_nu_shock(2*T+1:3*T,1));
 subplot(2,2,4);
 plot(trans_tank_nu_shock(3*T+1:4*T,1));
+
+
+%  ==============================
+%% Option II : Log-lin method for TANK models (eq system is already linear)
+%  ==============================
+
+
 
 %% Plotting error in equations
 error_test_tank= tank_error(trans_tank_nu_shock,z_nu_shock,params);
