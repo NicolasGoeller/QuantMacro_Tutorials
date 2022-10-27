@@ -52,7 +52,7 @@ T=params.T;
 % - RANK model
 
 % Set initial guess vectors to eq-ss values
-x_tank_init=ones(4*params.T,1);
+x_tank_init=ones(3*params.T,1);
 x_rank_init=zeros(3*params.T,1);
 
 
