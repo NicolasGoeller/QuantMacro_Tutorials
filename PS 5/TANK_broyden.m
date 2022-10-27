@@ -16,7 +16,8 @@ while sum(error.^2) > params.criter_V
     iter = iter + 1;
 
     %Compute difference of new guess
-    s = -inv(B)*tank_error(guess,z,params); 
+    s = -inv(B)*error;
+     
 
     %compute new guess 
     guess_new = guess + s; 
@@ -24,11 +25,12 @@ while sum(error.^2) > params.criter_V
     guess_new = max(guess_new, 1e-8);
 
     %Compute function value difference for two guesses
-    y = tank_error(guess_new,z,params)-tank_error(guess,z,params);
+    error_new = tank_error(guess_new,z,params);
+    y = error_new - error;
     
+    % Recycle values for next iteration
     guess = guess_new;
-    
-    error = tank_error(guess,z,params); %evaluate error of new guess
+    error = error_new;
 
     if abs(s'*s) > 1e-2 % evaluate if norm of x difference is not 0
         B = B + ((y - B*s)*s')/(s'*s); %Compute updated Jacobian

@@ -1,4 +1,4 @@
-function jacob = tank_jacob(x0,z, params)
+function jacob = tank_jacob(x0, z, params)
 % This function computes a numerical approximation of a jacobian matrix at
 % a specific point (combination of values)
 % x0: vector of values to evaluate the function at
