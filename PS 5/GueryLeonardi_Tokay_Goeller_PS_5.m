@@ -81,10 +81,6 @@ end
 z_nu_shock = [epsi_a_no_shock; nu_val_nu_shock];
 z_a_shock = [a_val_a_shock; epsi_nu_no_shock];
 
-% start Broyden Function (including initial jacobian)
-
-%h= tank_error(x_tank_init, z_nu, params);
-
 %  ==============================
 %% Option I : Broydens Method for TANK model
 %  ==============================
@@ -124,11 +120,18 @@ labor2 = output2 - z_nu_shock(1:T);
 shock2 = z_nu_shock(1:T);
 %%
 x_fsolve_nushock= fsolve(@(x) tank_error(x,z_nu_shock,params),x_tank_init);
+
 cH_nushock=(x_fsolve_nushock(1:T)-(1-params.lambda)*x_fsolve_nushock(2*T+1:3*T))/params.lambda;
 interest_nushock=params.phipi*x_fsolve_nushock(T+1:2*T)+nu_val_nu_shock;
+n_nushock = x_fsolve_nushock(1:T) - z_nu_shock(1:T);
 
+x_fsolve_ashock= fsolve(@(x) tank_error(x,z_a_shock,params),x_tank_init);
 
+cH_ashock=(x_fsolve_ashock(1:T)-(1-params.lambda)*x_fsolve_ashock(2*T+1:3*T))/params.lambda;
+interest_ashock=params.phipi*x_fsolve_ashock(T+1:2*T)+nu_val_nu_no_shock;
+n_ashock = x_fsolve_ashock(1:T) - a_val_a_shock;
 
+%%
 % Input dictionary
 % x_fsolve_nushock(1:T) output (y)
 % x_fsolve_nushock(T+1:2T) inflation (pi)
@@ -254,175 +257,192 @@ plot(error_test_tank(3*T+1:4*T,1));
 figure(1);
 title('Monetary Shock - Impulse Response Functions'); % this is not asked
 
-subplot(3,2,1);
-title('Consumption','Interpreter','Latex','fontsize',13);
+subplot(4,2,1);
+title('Smoother Consumption','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([c_interp(:,plotz)])
-plot([consumption1(1:T/5)]);
-ylabel('Consumption','Interpreter','Latex','fontsize',13);
+plot([x_fsolve_nushock(2*T+1:2.2*T,1)]);
+%ylabel('SConsumption','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,2);
+subplot(4,2,2);
+title('Hand-Mouth Consumption','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([c_interp(:,plotz)])
+plot([cH_nushock(1:T/5)]);
+%ylabel('H Consumption','Interpreter','Latex','fontsize',13);
+
+subplot(4,2,3);
 title('Labor supply','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([L_disc(:,plotz)])
 % plot([L_interp(:,plotz)])
-plot([labor1(1:T/5)]);
-ylabel('Labor supply','Interpreter','Latex','fontsize',13);
+plot([n_nushock(1:T/5)]);
+%ylabel('Labor supply','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,3);
+subplot(4,2,4);
 title('Inflation','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([inflation1(1:T/5)]);
-ylabel('Inflation','Interpreter','Latex','fontsize',13);
+plot([x_fsolve_nushock(T+1:1.2*T,1)]);
+%ylabel('Inflation','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,4);
+subplot(4,2,5);
 title('Interest rate','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([interest1(1:T/5)]);
-ylabel('Interest rate','Interpreter','Latex','fontsize',13);
+plot([interest_nushock(1:T/5)]);
+%ylabel('Interest rate','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,5);
+subplot(4,2,6);
 title('Output','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([output1(1:T/5)]);
-ylabel('Output','Interpreter','Latex','fontsize',13);
+plot([x_fsolve_nushock(1:T/5,1)]);
+%ylabel('Output','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,6);
+subplot(4,2,7);
 title('Shock','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([shock1(1:T/5)]);
-ylabel('Shock','Interpreter','Latex','fontsize',13);
+plot([z_nu_shock(T+1:1.2*T)]);
+%ylabel('Shock','Interpreter','Latex','fontsize',13);
 
-h = legend('Linearised','Location', 'best','Orientation','Vertical');
-set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
+% h = legend('Linearised','Location', 'best','Orientation','Vertical');
+% set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
 
 %% IRF plotting TANK with productivity shock
 
-figure('Productivity Shock','Impulse Response Functions'); % this is not asked
+figure(2);
+title('Productivity Shock - Impulse Response Functions'); % this is not asked
 
-subplot(3,2,1);
-title('Consumption','Interpreter','Latex','fontsize',13);
+subplot(4,2,1);
+title('Smoother Consumption','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([c_interp(:,plotz)])
-plot([c_sim_lin(:,plotz)]);
-ylabel('Consumption','Interpreter','Latex','fontsize',13);
+plot([x_fsolve_ashock(2*T+1:2.2*T,1)]);
+%ylabel('SConsumption','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,2);
+subplot(4,2,2);
+title('Hand-Mouth Consumption','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([c_interp(:,plotz)])
+plot([cH_ashock(1:T/5)]);
+%ylabel('H Consumption','Interpreter','Latex','fontsize',13);
+
+subplot(4,2,3);
 title('Labor supply','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([L_disc(:,plotz)])
 % plot([L_interp(:,plotz)])
-plot([L_sim_lin(:,plotz)]);
-ylabel('Labor supply','Interpreter','Latex','fontsize',13);
+plot([n_ashock(1:T/5)]);
+%ylabel('Labor supply','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,3);
+subplot(4,2,4);
 title('Inflation','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
-ylabel('Inflation','Interpreter','Latex','fontsize',13);
+plot([x_fsolve_ashock(T+1:1.2*T,1)]);
+%ylabel('Inflation','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,4);
+subplot(4,2,5);
 title('Interest rate','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
-ylabel('Interest rate','Interpreter','Latex','fontsize',13);
+plot([interest_ashock(1:T/5)]);
+%ylabel('Interest rate','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,5);
+subplot(4,2,6);
 title('Output','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
-ylabel('Output','Interpreter','Latex','fontsize',13);
+plot([x_fsolve_ashock(1:T/5,1)]);
+%ylabel('Output','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,6);
+subplot(4,2,7);
 title('Shock','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
-ylabel('Shock','Interpreter','Latex','fontsize',13);
+plot([z_a_shock(1:0.2*T)]);
+%ylabel('Shock','Interpreter','Latex','fontsize',13);
 
-h = legend('Linearised','Location', 'best','Orientation','Vertical');
-set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
+% h = legend('Linearised','Location', 'best','Orientation','Vertical');
+% set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
 
 %%
-plot(z_nu_shock(T+1:end))
 % Broydens method with monetary shock epsilon_a at t=0 for RANK model
 
 rank_params = params;
 rank_params.taud = 0;
 rank_params.lambda = 0.000001;
-jacob_tank3 = tank_jacob(x_tank_init,z_nu_shock, params);
-trans_tank_nu_shock3 = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank3, params.maxiter, params);  
+%jacob_tank3 = tank_jacob(x_tank_init,z_nu_shock, params);
+%trans_tank_nu_shock3 = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank3, params.maxiter, params);  
 
-output3 = trans_tank_nu_shock3(1:T);
-inflation3 = trans_tank_nu_shock3(T+1:2*T);
-consumption3 = trans_tank_nu_shock3(2*T+1:end);
-interest3 = params.phipi*inflation3 + z_nu_shock(T+1:end);
-labor3 = output3 - z_nu_shock(1:T);
-shock3 = z_nu_shock(1:T);
+x_fsolve_rank= fsolve(@(x) tank_error(x,z_nu_shock,params),x_tank_init);
 
-figure('Monetary Shock in TANK and RANK','Impulse Response Functions'); % this is not asked
+cH_rank=(x_fsolve_rank(1:T)-(1-params.lambda)*x_fsolve_rank(2*T+1:3*T))/params.lambda;
+interest_rank=params.phipi*x_fsolve_rank(T+1:2*T)+nu_val_nu_shock;
+n_rank = x_fsolve_rank(1:T) - a_val_a_no_shock;
 
-subplot(3,2,1);
-title('Consumption','Interpreter','Latex','fontsize',13);
+%%
+
+figure(3)
+title('Monetary Shock in TANK and RANK','Impulse Response Functions'); % this is not asked
+
+subplot(4,2,1);
+title('Smoother Consumption','Interpreter','Latex','fontsize',13);
 hold on;
-% plot([c_interp(:,plotz)])
-plot([c_sim_lin(:,plotz)]);
-ylabel('Consumption','Interpreter','Latex','fontsize',13);
+plot([x_fsolve_nushock(2*T+1:2.2*T,1)])
+plot([x_fsolve_rank(2*T+1:2.2*T,1)]);
+%ylabel('SConsumption','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,2);
+subplot(4,2,2);
+title('Hand-Mouth Consumption','Interpreter','Latex','fontsize',13);
+hold on;
+plot([cH_nushock(1:T/5)]);
+plot([cH_rank(1:T/5)]);
+%ylabel('H Consumption','Interpreter','Latex','fontsize',13);
+
+subplot(4,2,3);
 title('Labor supply','Interpreter','Latex','fontsize',13);
 hold on;
-% plot([L_disc(:,plotz)])
-% plot([L_interp(:,plotz)])
-plot([L_sim_lin(:,plotz)]);
-ylabel('Labor supply','Interpreter','Latex','fontsize',13);
+plot([n_nushock(1:T/5)]);
+plot([n_rank(1:T/5)]);
+%ylabel('Labor supply','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,3);
+subplot(4,2,4);
 title('Inflation','Interpreter','Latex','fontsize',13);
 hold on;
-% plot([kprime_disc(:,plotz)])
-% plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
-ylabel('Inflation','Interpreter','Latex','fontsize',13);
+plot([x_fsolve_nushock(T+1:1.2*T,1)]);
+plot([x_fsolve_rank(T+1:1.2*T,1)]);
+%ylabel('Inflation','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,4);
+subplot(4,2,5);
 title('Interest rate','Interpreter','Latex','fontsize',13);
 hold on;
-% plot([kprime_disc(:,plotz)])
-% plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
-ylabel('Interest rate','Interpreter','Latex','fontsize',13);
+plot([interest_nushock(1:T/5)]);
+plot([interest_rank(1:T/5)]);
+%ylabel('Interest rate','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,5);
+subplot(4,2,6);
 title('Output','Interpreter','Latex','fontsize',13);
 hold on;
-% plot([kprime_disc(:,plotz)])
-% plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
-ylabel('Output','Interpreter','Latex','fontsize',13);
+plot([x_fsolve_nushock(1:T/5,1)]);
+plot([x_fsolve_rank(1:T/5,1)]);
+%ylabel('Output','Interpreter','Latex','fontsize',13);
 
-subplot(3,2,6);
+subplot(4,2,7);
 title('Shock','Interpreter','Latex','fontsize',13);
 hold on;
-% plot([kprime_disc(:,plotz)])
-% plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
-ylabel('Shock','Interpreter','Latex','fontsize',13);
+plot([z_nu_shock(T+1:1.2*T)]);
+%ylabel('Shock','Interpreter','Latex','fontsize',13);
 
-h = legend('Linearised','Location', 'best','Orientation','Vertical');
-set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
+% h = legend('Linearised','Location', 'best','Orientation','Vertical');
+% set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
