@@ -37,7 +37,7 @@ params.maxiter = 1000; %maxiter for broyden
 % ============
 
 params.criter_V = 1e-10; % conv criterion for value function
-params.T=20; % periods for transition
+params.T=100; % periods for transition
 T=params.T;
 
 % ===========
@@ -90,9 +90,14 @@ z_a_shock = [a_val_a_shock; epsi_nu_no_shock];
 %  ==============================
 
 % Broydens method with monetary shock epsilon_nu at t=0
-T1 = 10;
-jacob_tank = tank_jacob(x_tank_init,z_nu_shock, params);
-trans_tank_nu_shock = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank, params.maxiter, params);  
+jacob_tank1 = tank_jacob(x_tank_init,z_nu_shock, params);
+trans_tank_nu_shock1 = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank1, params.maxiter, params);  
+
+%%
+
+% Broydens method with production shock epsilon_a at t=0
+%jacob_tank2 = tank_jacob(x_tank_init,z_a_shock, params);
+%trans_tank_nu_shock2 = TANK_broyden(x_tank_init, z_a_shock, jacob_tank2, params.maxiter, params);  
 
 %investment_tank_nu_shock= params.phipi*trans_tank_nu_shock(T+1:2T,1) + nu_val_nu_shock(2:end);
 
@@ -130,24 +135,13 @@ subplot(2,2,4);
 plot(error_test_tank(3*T+1:4*T,1));
 
 
-%%
-
-% Broydens method with productivity shock epsilon_a at t=0
-% T1 = 10;
-% jacob_tank = tank_jacob(x_tank_init,z_a, params);
-% trans1 = ncgm_broyden(x1, jacob1, 1e-6, T1, params);
-
-
-
 %% IRF plotting TANK with monetary shock
-
 
 figure('Monetary Shock','Impulse Response functions'); % this is not asked
 
 subplot(3,2,1);
 title('Consumption','Interpreter','Latex','fontsize',13);
 hold on;
-% plot([c_disc(:,plotz)])
 % plot([c_interp(:,plotz)])
 plot([c_sim_lin(:,plotz)]);
 ylabel('Consumption','Interpreter','Latex','fontsize',13);
@@ -195,61 +189,118 @@ ylabel('Shock','Interpreter','Latex','fontsize',13);
 h = legend('Linearised','Location', 'best','Orientation','Vertical');
 set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
 
+%% IRF plotting TANK with productivity shock
 
+figure('Productivity Shock','Impulse Response functions'); % this is not asked
 
-
-
-%%
-% ==============
-% 4. Figures
-% ==============
-% plot policy function
-% plot policy function
-figure(1)
-% levels
-subplot(2,1,1); subplot
-title('Policy functions');
+subplot(3,2,1);
+title('Consumption','Interpreter','Latex','fontsize',13);
 hold on;
-plot(k_lin,k_lina); %% here is a graph of k'(k)
-plot(k_lin_num',k_lina_num');
-xlabel('k_{t}','FontSize',10);
-ylabel('k_{t+1}','FontSize',10);
-subplot (2,1,2);
-title('Percentage of difference');
-plot(k_lin,abs((k_lina-k_lina_num)/k_lina));
-xlabel('k_{t}','FontSize',10);
-ylabel('% of difference','FontSize',10);
-%plot(k_lin_num,k_lina_num);
-hold off
+% plot([c_interp(:,plotz)])
+plot([c_sim_lin(:,plotz)]);
+ylabel('Consumption','Interpreter','Latex','fontsize',13);
+
+subplot(3,2,2);
+title('Labor supply','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([L_disc(:,plotz)])
+% plot([L_interp(:,plotz)])
+plot([L_sim_lin(:,plotz)]);
+ylabel('Labor supply','Interpreter','Latex','fontsize',13);
+
+subplot(3,2,3);
+title('Inflation','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Inflation','Interpreter','Latex','fontsize',13);
+
+subplot(3,2,4);
+title('Interest rate','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Interest rate','Interpreter','Latex','fontsize',13);
+
+subplot(3,2,5);
+title('Output','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Output','Interpreter','Latex','fontsize',13);
+
+subplot(3,2,6);
+title('Shock','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Shock','Interpreter','Latex','fontsize',13);
+
+h = legend('Linearised','Location', 'best','Orientation','Vertical');
+set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
 
 %%
-% plot the transition
-% Time variable
-figure(2)
-subplot(2,1,1)
-T = 100;
-crop_off = 70;
-x = 1:1:crop_off;
-figure(2)
-title('Simulated deterministic transition - infinite time')
+plot(z_nu_shock(T+1:end))
+% Broydens method with monetary shock epsilon_a at t=0 for RANK model
 
-hold on
-plot(x, k_analyt(1:crop_off)', x, trans2(1:crop_off)), xlabel('Time steps'), ylabel('Capital level');
+rank_params = params;
+rank_params.taud = 0;
+rank_params.lambda = 0.000001;
+jacob_tank3 = tank_jacob(x_tank_init,z_nu_shock, params);
+trans_tank_nu_shock3 = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank3, params.maxiter, params);  
 
-subplot(2,1,2);
-hold on
-plot(x, consum_analyt(1:crop_off)', x, trans2(T+1:T+crop_off)), xlabel('Time steps'), ylabel('Consumption level');
-hold off
+figure('Monetary Shock in TANK and RANK','Impulse Response functions'); % this is not asked
 
-if delta==1 && abs(sigma-1)<0.001
-    h = legend('Analytical solution', 'Broydens method' ,'Location', 'bestoutside','Orientation','Vertical');
-    h.Title.String = 'Analytically solvable paths';
-else
-    h = legend(['Analytical solution', 'Broydens method'] ,'Location', 'bestoutside','Orientation','Vertical');
-    h.Title.String = 'Non-linearised paths';
-end
-set(h,'fontsize',12,'Interpreter','Latex');%'Orientation', 'horizontal'
+subplot(3,2,1);
+title('Consumption','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([c_interp(:,plotz)])
+plot([c_sim_lin(:,plotz)]);
+ylabel('Consumption','Interpreter','Latex','fontsize',13);
 
+subplot(3,2,2);
+title('Labor supply','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([L_disc(:,plotz)])
+% plot([L_interp(:,plotz)])
+plot([L_sim_lin(:,plotz)]);
+ylabel('Labor supply','Interpreter','Latex','fontsize',13);
 
+subplot(3,2,3);
+title('Inflation','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Inflation','Interpreter','Latex','fontsize',13);
 
+subplot(3,2,4);
+title('Interest rate','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Interest rate','Interpreter','Latex','fontsize',13);
 
+subplot(3,2,5);
+title('Output','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Output','Interpreter','Latex','fontsize',13);
+
+subplot(3,2,6);
+title('Shock','Interpreter','Latex','fontsize',13);
+hold on;
+% plot([kprime_disc(:,plotz)])
+% plot([kprime_interp(:,plotz)])
+plot([k_sim_lin(:,plotz)]);
+ylabel('Shock','Interpreter','Latex','fontsize',13);
+
+h = legend('Linearised','Location', 'best','Orientation','Vertical');
+set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
