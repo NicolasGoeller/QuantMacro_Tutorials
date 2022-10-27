@@ -118,13 +118,13 @@ consumption2 = trans_tank_nu_shock2(2*T+1:end);
 interest2 = params.phipi*inflation2 + z_nu_shock(T+1:end);
 labor2 = output2 - z_nu_shock(1:T);
 shock2 = z_nu_shock(1:T);
-%%
+%% Monetary shock
 x_fsolve_nushock= fsolve(@(x) tank_error(x,z_nu_shock,params),x_tank_init);
 
 cH_nushock=(x_fsolve_nushock(1:T)-(1-params.lambda)*x_fsolve_nushock(2*T+1:3*T))/params.lambda;
 interest_nushock=params.phipi*x_fsolve_nushock(T+1:2*T)+nu_val_nu_shock;
 n_nushock = x_fsolve_nushock(1:T) - z_nu_shock(1:T);
-
+%% Productivity shock
 x_fsolve_ashock= fsolve(@(x) tank_error(x,z_a_shock,params),x_tank_init);
 
 cH_ashock=(x_fsolve_ashock(1:T)-(1-params.lambda)*x_fsolve_ashock(2*T+1:3*T))/params.lambda;
