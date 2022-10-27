@@ -91,16 +91,26 @@ z_a_shock = [a_val_a_shock; epsi_nu_no_shock];
 
 % Broydens method with monetary shock epsilon_nu at t=0
 jacob_tank1 = tank_jacob(x_tank_init,z_nu_shock, params);
-trans_tank_nu_shock1 = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank1, params.maxiter, params);  
+trans_tank_nu_shock1 = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank1, params.maxiter, params);
 
-%%
+output1 = trans_tank_nu_shock1(1:T);
+inflation1 = trans_tank_nu_shock1(T+1:2*T);
+consumption1 = trans_tank_nu_shock1(2*T+1:end);
+interest1 = params.phipi*inflation1 + z_nu_shock(T+1:end);
+labor1 = output1 - z_nu_shock(1:T);
+shock1 = z_nu_shock(T+1:end);
 
 % Broydens method with production shock epsilon_a at t=0
-%jacob_tank2 = tank_jacob(x_tank_init,z_a_shock, params);
-%trans_tank_nu_shock2 = TANK_broyden(x_tank_init, z_a_shock, jacob_tank2, params.maxiter, params);  
+jacob_tank2 = tank_jacob(x_tank_init,z_a_shock, params);
+trans_tank_nu_shock2 = TANK_broyden(x_tank_init, z_a_shock, jacob_tank2, params.maxiter, params);  
 
-%investment_tank_nu_shock= params.phipi*trans_tank_nu_shock(T+1:2T,1) + nu_val_nu_shock(2:end);
-
+output2 = trans_tank_nu_shock2(1:T);
+inflation2 = trans_tank_nu_shock2(T+1:2*T);
+consumption2 = trans_tank_nu_shock2(2*T+1:end);
+interest2 = params.phipi*inflation2 + z_nu_shock(T+1:end);
+labor2 = output2 - z_nu_shock(1:T);
+shock2 = z_nu_shock(1:T);
+%%
 % Input dictionary
 % trans_tank_nu_shock(1:T) output (y)
 % trans_tank_nu_shock(T+1:2T) inflation (pi)
@@ -137,13 +147,14 @@ plot(error_test_tank(3*T+1:4*T,1));
 
 %% IRF plotting TANK with monetary shock
 
-figure('Monetary Shock','Impulse Response functions'); % this is not asked
+figure(1);
+title('Monetary Shock - Impulse Response Functions'); % this is not asked
 
 subplot(3,2,1);
 title('Consumption','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([c_interp(:,plotz)])
-plot([c_sim_lin(:,plotz)]);
+plot([consumption1(1:T/5)]);
 ylabel('Consumption','Interpreter','Latex','fontsize',13);
 
 subplot(3,2,2);
@@ -151,7 +162,7 @@ title('Labor supply','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([L_disc(:,plotz)])
 % plot([L_interp(:,plotz)])
-plot([L_sim_lin(:,plotz)]);
+plot([labor1(1:T/5)]);
 ylabel('Labor supply','Interpreter','Latex','fontsize',13);
 
 subplot(3,2,3);
@@ -159,7 +170,7 @@ title('Inflation','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
+plot([inflation1(1:T/5)]);
 ylabel('Inflation','Interpreter','Latex','fontsize',13);
 
 subplot(3,2,4);
@@ -167,7 +178,7 @@ title('Interest rate','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
+plot([interest1(1:T/5)]);
 ylabel('Interest rate','Interpreter','Latex','fontsize',13);
 
 subplot(3,2,5);
@@ -175,7 +186,7 @@ title('Output','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
+plot([output1(1:T/5)]);
 ylabel('Output','Interpreter','Latex','fontsize',13);
 
 subplot(3,2,6);
@@ -183,7 +194,7 @@ title('Shock','Interpreter','Latex','fontsize',13);
 hold on;
 % plot([kprime_disc(:,plotz)])
 % plot([kprime_interp(:,plotz)])
-plot([k_sim_lin(:,plotz)]);
+plot([shock1(1:T/5)]);
 ylabel('Shock','Interpreter','Latex','fontsize',13);
 
 h = legend('Linearised','Location', 'best','Orientation','Vertical');
@@ -191,7 +202,7 @@ set(h,'fontsize',13,'Interpreter','Latex');%'Orientation', 'horizontal'
 
 %% IRF plotting TANK with productivity shock
 
-figure('Productivity Shock','Impulse Response functions'); % this is not asked
+figure('Productivity Shock','Impulse Response Functions'); % this is not asked
 
 subplot(3,2,1);
 title('Consumption','Interpreter','Latex','fontsize',13);
@@ -253,7 +264,14 @@ rank_params.lambda = 0.000001;
 jacob_tank3 = tank_jacob(x_tank_init,z_nu_shock, params);
 trans_tank_nu_shock3 = TANK_broyden(x_tank_init, z_nu_shock, jacob_tank3, params.maxiter, params);  
 
-figure('Monetary Shock in TANK and RANK','Impulse Response functions'); % this is not asked
+output3 = trans_tank_nu_shock3(1:T);
+inflation3 = trans_tank_nu_shock3(T+1:2*T);
+consumption3 = trans_tank_nu_shock3(2*T+1:end);
+interest3 = params.phipi*inflation3 + z_nu_shock(T+1:end);
+labor3 = output3 - z_nu_shock(1:T);
+shock3 = z_nu_shock(1:T);
+
+figure('Monetary Shock in TANK and RANK','Impulse Response Functions'); % this is not asked
 
 subplot(3,2,1);
 title('Consumption','Interpreter','Latex','fontsize',13);
